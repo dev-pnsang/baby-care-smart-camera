@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../models/expression_type.dart';
 import '../providers/camera_provider.dart';
-import '../widgets/neumorphic_button.dart';
+import '../widgets/expression_bubble_widget.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 
 class ExpressionControllerScreen extends StatefulWidget {
@@ -24,62 +25,9 @@ class _ExpressionControllerScreenState
     });
 
     final cameraProvider = Provider.of<CameraProvider>(context, listen: false);
-    await cameraProvider.updateExpression(type);
-
-    if (mounted) {
-      _showSuccessBottomSheet();
-    }
-  }
-
-  void _showSuccessBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(30),
-        decoration: BoxDecoration(
-          color: AppTheme.surfaceColor,
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(AppTheme.borderRadius),
-          ),
-          boxShadow: AppTheme.neumorphicShadow,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.check_circle,
-              color: AppTheme.primaryBlue,
-              size: 60,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Cập nhật biểu cảm thành công',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textDark,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            NeumorphicButton(
-              width: double.infinity,
-              height: 50,
-              onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'Đóng',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textDark,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    
+    // Notify hardware with expression ID and trigger sound effect
+    await cameraProvider.notifyHardware(type.name);
   }
 
   @override
@@ -101,25 +49,12 @@ class _ExpressionControllerScreenState
                     child: Stack(
                       children: [
                         Center(
-                          child: const Text(
+                          child: Text(
                             'Điều khiển Biểu Cảm',
-                            style: TextStyle(
+                            style: GoogleFonts.quicksand(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                               color: AppTheme.textDark,
-                            ),
-                          ),
-                        ),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: NeumorphicButton(
-                            width: 50,
-                            height: 50,
-                            onPressed: () => Navigator.pop(context),
-                            child: const Icon(
-                              Icons.arrow_back_ios_new,
-                              color: AppTheme.textDark,
-                              size: 20,
                             ),
                           ),
                         ),
@@ -127,63 +62,23 @@ class _ExpressionControllerScreenState
                     ),
                   ),
 
-                  // Emoji Grid
+                  // Expression Grid
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(
-                        left: 20.0,
-                        right: 20.0,
-                        top: 20.0,
-                        bottom: 100.0,
-                      ),
-                      child: GridView.builder(
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 20,
-                          mainAxisSpacing: 20,
-                          childAspectRatio: 1,
-                        ),
-                        itemCount: ExpressionType.values.length,
-                        itemBuilder: (context, index) {
-                          final expression = ExpressionType.values[index];
+                      padding: const EdgeInsets.all(25.0),
+                      child: GridView.count(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 25,
+                        crossAxisSpacing: 25,
+                        childAspectRatio: 0.85,
+                        children: ExpressionType.values.map((expression) {
                           final isSelected = _selectedExpression == expression;
-
-                          return NeumorphicButton(
-                            isActive: isSelected,
-                            activeGlowColor: AppTheme.primaryBlue,
-                            onPressed: () => _handleExpressionTap(expression),
-                            child: Text(
-                              expression.emoji,
-                              style: const TextStyle(fontSize: 50),
-                            ),
+                          return ExpressionBubbleWidget(
+                            expression: expression,
+                            isSelected: isSelected,
+                            onTap: () => _handleExpressionTap(expression),
                           );
-                        },
-                      ),
-                    ),
-                  ),
-
-                  // Action Button
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 20.0,
-                      right: 20.0,
-                      bottom: 100.0,
-                    ),
-                    child: NeumorphicButton(
-                      width: double.infinity,
-                      height: 60,
-                      onPressed: () {
-                        if (_selectedExpression != null) {
-                          _handleExpressionTap(_selectedExpression!);
-                        }
-                      },
-                      child: const Text(
-                        'Phát tiếng cười & mặt vui vẻ',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textDark,
-                        ),
+                        }).toList(),
                       ),
                     ),
                   ),
@@ -198,4 +93,3 @@ class _ExpressionControllerScreenState
     );
   }
 }
-
