@@ -3,9 +3,18 @@ import '../models/expression_type.dart';
 
 class CameraProvider extends ChangeNotifier {
   ExpressionType? _currentExpression;
-  
+
+  /// URL RTSP lấy từ CameraSettingsProvider khi có cấu hình.
+  bool _isStreaming = false;
+  bool get isStreaming => _isStreaming;
+
   ExpressionType? get currentExpression => _currentExpression;
-  
+
+  void setStreamingStatus(bool status) {
+    _isStreaming = status;
+    notifyListeners();
+  }
+
   /// Updates the expression on the camera's 2.8-inch screen and plays corresponding sound
   Future<void> notifyHardware(String expressionID) async {
     // Find the expression type from ID
@@ -13,20 +22,20 @@ class CameraProvider extends ChangeNotifier {
       (e) => e.name.toLowerCase() == expressionID.toLowerCase(),
       orElse: () => ExpressionType.happy,
     );
-    
+
     _currentExpression = expression;
     notifyListeners();
-    
+
     // Simulate hardware communication delay
     await Future.delayed(const Duration(milliseconds: 300));
-    
+
     // In a real app, this would send a signal to the 2.8-inch screen hardware
     debugPrint('Expression updated to hardware: ${expression.name}');
-    
+
     // Trigger sound effect for the camera's speaker
     await _playSoundEffect(expression);
   }
-  
+
   /// Plays the corresponding sound effect for the expression
   Future<void> _playSoundEffect(ExpressionType type) async {
     // In a real app, this would send a command to the camera's speaker
@@ -38,31 +47,30 @@ class CameraProvider extends ChangeNotifier {
       ExpressionType.playful: 'laugh',
       ExpressionType.calm: 'coo',
     };
-    
+
     final sound = soundMap[type] ?? 'giggle';
     debugPrint('Playing sound effect: $sound');
-    
+
     // Simulate sound playback delay
     await Future.delayed(const Duration(milliseconds: 200));
   }
-  
+
   Future<void> updateExpression(ExpressionType type) async {
     _currentExpression = type;
     notifyListeners();
-    
+
     // Simulate hardware communication delay
     await Future.delayed(const Duration(milliseconds: 300));
-    
+
     // In a real app, this would send a signal to the 2.8-inch screen hardware
     debugPrint('Expression updated to hardware: ${type.name}');
-    
+
     // Also play sound effect
     await _playSoundEffect(type);
   }
-  
+
   void reset() {
     _currentExpression = null;
     notifyListeners();
   }
 }
-

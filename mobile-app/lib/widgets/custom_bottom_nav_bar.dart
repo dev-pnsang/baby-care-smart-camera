@@ -23,6 +23,8 @@ class CustomBottomNavBar extends StatelessWidget {
           return 1;
         case '/lullaby':
           return 2;
+        case '/settings':
+          return 3;
         default:
           return 0;
       }
@@ -46,6 +48,9 @@ class CustomBottomNavBar extends StatelessWidget {
         break;
       case 2:
         Navigator.pushReplacementNamed(context, '/lullaby');
+        break;
+      case 3:
+        Navigator.pushReplacementNamed(context, '/settings');
         break;
     }
   }
@@ -91,23 +96,37 @@ class CustomBottomNavBar extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _NavItem(
-                    icon: Icons.home_rounded,
-                    label: 'Dashboard',
-                    isActive: activeIndex == 0,
-                    onTap: () => _handleTap(0, context),
+                  Expanded(
+                    child: _NavItem(
+                      icon: Icons.home_rounded,
+                      label: 'Dashboard',
+                      isActive: activeIndex == 0,
+                      onTap: () => _handleTap(0, context),
+                    ),
                   ),
-                  _NavItem(
-                    icon: Icons.face_retouching_natural_rounded,
-                    label: 'Expression',
-                    isActive: activeIndex == 1,
-                    onTap: () => _handleTap(1, context),
+                  Expanded(
+                    child: _NavItem(
+                      icon: Icons.face_retouching_natural_rounded,
+                      label: 'Expression',
+                      isActive: activeIndex == 1,
+                      onTap: () => _handleTap(1, context),
+                    ),
                   ),
-                  _NavItem(
-                    icon: Icons.music_note_rounded,
-                    label: 'Music',
-                    isActive: activeIndex == 2,
-                    onTap: () => _handleTap(2, context),
+                  Expanded(
+                    child: _NavItem(
+                      icon: Icons.music_note_rounded,
+                      label: 'Music',
+                      isActive: activeIndex == 2,
+                      onTap: () => _handleTap(2, context),
+                    ),
+                  ),
+                  Expanded(
+                    child: _NavItem(
+                      icon: Icons.settings_rounded,
+                      label: 'Cài đặt',
+                      isActive: activeIndex == 3,
+                      onTap: () => _handleTap(3, context),
+                    ),
                   ),
                 ],
               ),
@@ -150,17 +169,20 @@ class _NavItemState extends State<_NavItem> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
         decoration: BoxDecoration(
           color: widget.isActive
               ? activeColor.withOpacity(0.2)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Stack(
+        child: SizedBox(
+          width: double.infinity,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Stack(
               clipBehavior: Clip.none,
               children: [
                 AnimatedContainer(
@@ -169,10 +191,9 @@ class _NavItemState extends State<_NavItem> {
                   child: Icon(
                     widget.icon,
                     color: widget.isActive ? activeColor : inactiveColor,
-                    size: 28,
+                    size: 26,
                   ),
                 ),
-                // Glowing dot indicator for active state
                 if (widget.isActive)
                   Positioned(
                     top: -4,
@@ -199,21 +220,33 @@ class _NavItemState extends State<_NavItem> {
                   ),
               ],
             ),
-            const SizedBox(height: 4),
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              style: TextStyle(
-                fontSize: 12,
-                color: widget.isActive ? activeColor : inactiveColor,
-                fontWeight: widget.isActive ? FontWeight.w600 : FontWeight.normal,
-              ),
-              child: Text(widget.label),
+            const SizedBox(height: 2),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return SizedBox(
+                  width: constraints.maxWidth,
+                  child: AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: widget.isActive ? activeColor : inactiveColor,
+                      fontWeight: widget.isActive ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                    child: Text(
+                      widget.label,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              },
             ),
           ],
+          ),
         ),
       ),
     );
   }
 }
-

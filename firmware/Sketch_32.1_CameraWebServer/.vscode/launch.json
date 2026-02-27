@@ -1,0 +1,24 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "cppdbg",
+      "request": "launch",
+      "args": [],
+      "stopAtEntry": false,
+      "externalConsole": true,
+      "cwd": "c:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/Sketch_32.1_CameraWebServer",
+      "program": "c:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/Sketch_32.1_CameraWebServer/build/Debug/outDebug",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ]
+}

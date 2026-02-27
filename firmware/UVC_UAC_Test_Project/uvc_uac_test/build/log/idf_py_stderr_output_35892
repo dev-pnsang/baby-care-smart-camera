@@ -1,0 +1,100 @@
+fatal: bad config line 2 in file C:/esp/v5.5.2/esp-idf/.git/modules/components/bootloader/subproject/components/micro-ecc/micro-ecc/config
+CMake Error at C:/esp/v5.5.2/esp-idf/tools/cmake/build.cmake:629 (message):
+  Traceback (most recent call last):
+
+    File "<frozen runpy>", line 198, in _run_module_as_main
+    File "<frozen runpy>", line 88, in _run_code
+    File "C:\Espressif\python_env\idf5.1_py3.11_env\Lib\site-packages\idf_component_manager\prepare_components\__main__.py", line 6, in <module>
+      main()
+    File "C:\Espressif\python_env\idf5.1_py3.11_env\Lib\site-packages\idf_component_manager\prepare_components\prepare.py", line 325, in main
+      args.func(args)
+    File "C:\Espressif\python_env\idf5.1_py3.11_env\Lib\site-packages\idf_component_manager\prepare_components\prepare.py", line 156, in prepare_dep_dirs
+      ).prepare_dep_dirs(
+        ^^^^^^^^^^^^^^^^^
+    File "C:\Espressif\python_env\idf5.1_py3.11_env\Lib\site-packages\idf_component_manager\core.py", line 111, in wrapper
+      return func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "C:\Espressif\python_env\idf5.1_py3.11_env\Lib\site-packages\idf_component_manager\core.py", line 748, in prepare_dep_dirs
+      downloaded_components = download_project_dependencies(
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "C:\Espressif\python_env\idf5.1_py3.11_env\Lib\site-packages\idf_component_manager\dependencies.py", line 526, in download_project_dependencies
+      download_path = fetcher.download()
+                      ^^^^^^^^^^^^^^^^^^
+    File "C:\Espressif\python_env\idf5.1_py3.11_env\Lib\site-packages\idf_component_tools\sources\fetcher.py", line 29, in download
+      download_path = self.source.download(self.component, self.component_path.as_posix())
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "C:\Espressif\python_env\idf5.1_py3.11_env\Lib\site-packages\idf_component_tools\sources\web_service.py", line 309, in download
+      copy_directory(component_cache_path, download_path)
+    File "C:\Espressif\python_env\idf5.1_py3.11_env\Lib\site-packages\idf_component_tools\file_tools.py", line 177, in copy_directory
+      copytree(source_directory, destination_directory)
+    File "shutil.py", line 561, in copytree
+    File "shutil.py", line 515, in _copytree
+
+  shutil.Error:
+  [('C:\\Users\\SanSan\\AppData\\Local\\Espressif\\ComponentManager\\Cache\\service_d92d8f1e\\espressif__usb_stream_1.5.1_130b2608\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_jpeg\\include\\esp_jpeg_common.h',
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_jpeg\\include\\esp_jpeg_common.h',
+  "[Errno 2] No such file or directory:
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\\\external_examples\\\\3e99051c\\\\usb_camera_lcd_display\\\\components\\\\esp_jpeg\\\\include\\\\esp_jpeg_common.h'"),
+  ('C:\\Users\\SanSan\\AppData\\Local\\Espressif\\ComponentManager\\Cache\\service_d92d8f1e\\espressif__usb_stream_1.5.1_130b2608\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_jpeg\\include\\esp_jpeg_dec.h',
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_jpeg\\include\\esp_jpeg_dec.h',
+  "[Errno 2] No such file or directory:
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\\\external_examples\\\\3e99051c\\\\usb_camera_lcd_display\\\\components\\\\esp_jpeg\\\\include\\\\esp_jpeg_dec.h'"),
+  ('C:\\Users\\SanSan\\AppData\\Local\\Espressif\\ComponentManager\\Cache\\service_d92d8f1e\\espressif__usb_stream_1.5.1_130b2608\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_jpeg\\include\\esp_jpeg_enc.h',
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_jpeg\\include\\esp_jpeg_enc.h',
+  "[Errno 2] No such file or directory:
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\\\external_examples\\\\3e99051c\\\\usb_camera_lcd_display\\\\components\\\\esp_jpeg\\\\include\\\\esp_jpeg_enc.h'"),
+  ('C:\\Users\\SanSan\\AppData\\Local\\Espressif\\ComponentManager\\Cache\\service_d92d8f1e\\espressif__usb_stream_1.5.1_130b2608\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_jpeg\\libs\\esp32s3',
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_jpeg\\libs\\esp32s3',
+  "[WinError 206] The filename or extension is too long:
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\\\external_examples\\\\3e99051c\\\\usb_camera_lcd_display\\\\components\\\\esp_jpeg\\\\libs\\\\esp32s3'"),
+  ('C:\\Users\\SanSan\\AppData\\Local\\Espressif\\ComponentManager\\Cache\\service_d92d8f1e\\espressif__usb_stream_1.5.1_130b2608\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_painter\\font\\basic_font_12.c',
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_painter\\font\\basic_font_12.c',
+  "[Errno 2] No such file or directory:
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\\\external_examples\\\\3e99051c\\\\usb_camera_lcd_display\\\\components\\\\esp_painter\\\\font\\\\basic_font_12.c'"),
+  ('C:\\Users\\SanSan\\AppData\\Local\\Espressif\\ComponentManager\\Cache\\service_d92d8f1e\\espressif__usb_stream_1.5.1_130b2608\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_painter\\font\\basic_font_16.c',
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_painter\\font\\basic_font_16.c',
+  "[Errno 2] No such file or directory:
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\\\external_examples\\\\3e99051c\\\\usb_camera_lcd_display\\\\components\\\\esp_painter\\\\font\\\\basic_font_16.c'"),
+  ('C:\\Users\\SanSan\\AppData\\Local\\Espressif\\ComponentManager\\Cache\\service_d92d8f1e\\espressif__usb_stream_1.5.1_130b2608\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_painter\\font\\basic_font_20.c',
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_painter\\font\\basic_font_20.c',
+  "[Errno 2] No such file or directory:
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\\\external_examples\\\\3e99051c\\\\usb_camera_lcd_display\\\\components\\\\esp_painter\\\\font\\\\basic_font_20.c'"),
+  ('C:\\Users\\SanSan\\AppData\\Local\\Espressif\\ComponentManager\\Cache\\service_d92d8f1e\\espressif__usb_stream_1.5.1_130b2608\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_painter\\font\\basic_font_24.c',
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_painter\\font\\basic_font_24.c',
+  "[Errno 2] No such file or directory:
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\\\external_examples\\\\3e99051c\\\\usb_camera_lcd_display\\\\components\\\\esp_painter\\\\font\\\\basic_font_24.c'"),
+  ('C:\\Users\\SanSan\\AppData\\Local\\Espressif\\ComponentManager\\Cache\\service_d92d8f1e\\espressif__usb_stream_1.5.1_130b2608\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_painter\\font\\basic_font_28.c',
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_painter\\font\\basic_font_28.c',
+  "[Errno 2] No such file or directory:
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\\\external_examples\\\\3e99051c\\\\usb_camera_lcd_display\\\\components\\\\esp_painter\\\\font\\\\basic_font_28.c'"),
+  ('C:\\Users\\SanSan\\AppData\\Local\\Espressif\\ComponentManager\\Cache\\service_d92d8f1e\\espressif__usb_stream_1.5.1_130b2608\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_painter\\font\\basic_font_32.c',
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_painter\\font\\basic_font_32.c',
+  "[Errno 2] No such file or directory:
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\\\external_examples\\\\3e99051c\\\\usb_camera_lcd_display\\\\components\\\\esp_painter\\\\font\\\\basic_font_32.c'"),
+  ('C:\\Users\\SanSan\\AppData\\Local\\Espressif\\ComponentManager\\Cache\\service_d92d8f1e\\espressif__usb_stream_1.5.1_130b2608\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_painter\\font\\basic_font_36.c',
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_painter\\font\\basic_font_36.c',
+  "[Errno 2] No such file or directory:
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\\\external_examples\\\\3e99051c\\\\usb_camera_lcd_display\\\\components\\\\esp_painter\\\\font\\\\basic_font_36.c'"),
+  ('C:\\Users\\SanSan\\AppData\\Local\\Espressif\\ComponentManager\\Cache\\service_d92d8f1e\\espressif__usb_stream_1.5.1_130b2608\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_painter\\font\\basic_font_40.c',
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_painter\\font\\basic_font_40.c',
+  "[Errno 2] No such file or directory:
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\\\external_examples\\\\3e99051c\\\\usb_camera_lcd_display\\\\components\\\\esp_painter\\\\font\\\\basic_font_40.c'"),
+  ('C:\\Users\\SanSan\\AppData\\Local\\Espressif\\ComponentManager\\Cache\\service_d92d8f1e\\espressif__usb_stream_1.5.1_130b2608\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_painter\\font\\basic_font_44.c',
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_painter\\font\\basic_font_44.c',
+  "[Errno 2] No such file or directory:
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\\\external_examples\\\\3e99051c\\\\usb_camera_lcd_display\\\\components\\\\esp_painter\\\\font\\\\basic_font_44.c'"),
+  ('C:\\Users\\SanSan\\AppData\\Local\\Espressif\\ComponentManager\\Cache\\service_d92d8f1e\\espressif__usb_stream_1.5.1_130b2608\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_painter\\font\\basic_font_48.c',
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_painter\\font\\basic_font_48.c',
+  "[Errno 2] No such file or directory:
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\\\external_examples\\\\3e99051c\\\\usb_camera_lcd_display\\\\components\\\\esp_painter\\\\font\\\\basic_font_48.c'"),
+  ('C:\\Users\\SanSan\\AppData\\Local\\Espressif\\ComponentManager\\Cache\\service_d92d8f1e\\espressif__usb_stream_1.5.1_130b2608\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_painter\\include',
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\external_examples\\3e99051c\\usb_camera_lcd_display\\components\\esp_painter\\include',
+  "[WinError 206] The filename or extension is too long:
+  'C:/Users/SanSan/Downloads/DataWork/FreeLancer/002/app-kid-cam/baby-care-smart-camera/firmware/UVC_UAC_Test_Project/uvc_uac_test/managed_components/espressif__usb_stream\\\\external_examples\\\\3e99051c\\\\usb_camera_lcd_display\\\\components\\\\esp_painter\\\\include'")]
+
+
+Call Stack (most recent call first):
+  C:/esp/v5.5.2/esp-idf/tools/cmake/project.cmake:740 (idf_build_process)
+  CMakeLists.txt:6 (project)
+
+
