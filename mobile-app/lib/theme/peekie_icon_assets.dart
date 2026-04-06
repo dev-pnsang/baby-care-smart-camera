@@ -40,6 +40,9 @@ abstract final class PeekieIconAssets {
   static const String relieved = '$_root/relieved-01.png';
   static const String autoMode = '$_root/artificial-intelligence-08.png';
   static const String customize = '$_root/preference-horizontal.png';
+  /// Top bar settings (toolbar).
+  static const String settingsToolbar = '$_root/Huge-icon.png';
+  static const String share01 = '$_root/share-01.png';
   static const String elements = '$_root/elements.png';
 }
 

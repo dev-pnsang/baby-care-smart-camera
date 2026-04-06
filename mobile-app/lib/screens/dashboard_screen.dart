@@ -257,6 +257,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     sliver: SliverToBoxAdapter(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           ClipRRect(
                             borderRadius:
@@ -414,8 +415,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 value: '26°C',
                                 footer: 'Nhiệt độ TB: 27°C',
                                 statusLabel: 'Ổn',
-                                statusBg: const Color(0x1A25A249),
-                                statusFg: DesignTokens.success6,
+                                statusBg: const Color(0xFF25A249),
+                                statusFg: Colors.white,
                               ),
                               const SizedBox(width: 12),
                               EnvStatCard(
@@ -428,8 +429,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 value: '40%',
                                 footer: 'Độ ẩm TB: 40%',
                                 statusLabel: 'Hơi khô',
-                                statusBg: const Color(0x1AF1A61B),
-                                statusFg: const Color(0xFFAB7613),
+                                statusBg: const Color(0xFFF1A61B),
+                                statusFg: Colors.white,
                               ),
                             ],
                           ),

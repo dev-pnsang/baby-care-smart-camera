@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/design_tokens.dart';
@@ -27,58 +29,75 @@ class PeekieTopBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(8, 4, 8, 12),
       child: Row(
         children: [
-          IconButton(
-            onPressed: onBack ?? () => Navigator.maybePop(context),
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            color: DesignTokens.neutral12,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-          ),
           Expanded(
-            child: Center(
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: DesignTokens.neutral12,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      babyName,
-                      style: text.titleLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    const Icon(Icons.keyboard_arrow_down_rounded,
-                        color: Colors.white, size: 22),
-                  ],
-                ),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: IconButton(
+                onPressed: onBack ?? () => Navigator.maybePop(context),
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                color: DesignTokens.neutral12,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
               ),
             ),
           ),
-          IconButton(
-            onPressed: onShare ??
-                () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Chia sẻ — sắp có')),
-                  );
-                },
-            icon: const Icon(Icons.ios_share_rounded),
-            color: DesignTokens.neutral12,
-          ),
-          IconButton(
-            onPressed: onSettings,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-            icon: PeekieAssetIcon(
-              PeekieIconAssets.customize,
-              size: 24,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
               color: DesignTokens.neutral12,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  babyName,
+                  style: text.titleLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const Icon(Icons.keyboard_arrow_down_rounded,
+                    color: Colors.white, size: 22),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: onShare ??
+                        () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Chia sẻ — sắp có')),
+                          );
+                        },
+                    padding: EdgeInsets.zero,
+                    constraints:
+                        const BoxConstraints(minWidth: 40, minHeight: 40),
+                    icon: PeekieAssetIcon(
+                      PeekieIconAssets.share01,
+                      size: 24,
+                      color: DesignTokens.neutral12,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: onSettings,
+                    padding: EdgeInsets.zero,
+                    constraints:
+                        const BoxConstraints(minWidth: 40, minHeight: 40),
+                    icon: PeekieAssetIcon(
+                      PeekieIconAssets.settingsToolbar,
+                      size: 24,
+                      color: DesignTokens.neutral12,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -87,10 +106,31 @@ class PeekieTopBar extends StatelessWidget {
   }
 }
 
-class StreamHudOverlay extends StatelessWidget {
+class StreamHudOverlay extends StatefulWidget {
   final bool showLive;
 
   const StreamHudOverlay({super.key, this.showLive = true});
+
+  @override
+  State<StreamHudOverlay> createState() => _StreamHudOverlayState();
+}
+
+class _StreamHudOverlayState extends State<StreamHudOverlay> {
+  Timer? _clockTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _clockTimer?.cancel();
+    super.dispose();
+  }
 
   String _timeStr() {
     final n = DateTime.now();
@@ -103,7 +143,7 @@ class StreamHudOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        if (showLive)
+        if (widget.showLive)
           Positioned(
             top: 12,
             left: 12,
@@ -273,7 +313,7 @@ class EnvStatCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: const Color(0xFFE8F4FF),
+          color: const Color(0xFFE2F1FF),
           borderRadius: BorderRadius.circular(22),
           boxShadow: [
             BoxShadow(
@@ -285,6 +325,7 @@ class EnvStatCard extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -292,14 +333,21 @@ class EnvStatCard extends StatelessWidget {
                 SizedBox(width: 24, height: 24, child: leading),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(
-                    label,
-                    style: t.titleSmall?.copyWith(
-                      color: DesignTokens.neutral12,
-                      fontWeight: FontWeight.w700,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      softWrap: false,
+                      style: t.titleSmall?.copyWith(
+                        color: DesignTokens.neutral12,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
+                const SizedBox(width: 6),
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -309,6 +357,8 @@ class EnvStatCard extends StatelessWidget {
                   ),
                   child: Text(
                     statusLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: t.labelSmall?.copyWith(
                       color: statusFg,
                       fontWeight: FontWeight.w700,
@@ -324,7 +374,8 @@ class EnvStatCard extends StatelessWidget {
               style: t.headlineLarge?.copyWith(
                 color: DesignTokens.neutral12,
                 fontWeight: FontWeight.w800,
-                fontSize: 26,
+                fontSize: 40,
+                height: 1.1,
               ),
             ),
             const SizedBox(height: 6),
@@ -417,20 +468,42 @@ class MiniMusicCard extends StatelessWidget {
                           Stack(
                             clipBehavior: Clip.none,
                             children: [
-                              PeekieAssetIcon(
-                                PeekieIconAssets.playlist,
-                                size: 28,
-                                color: DesignTokens.neutral12,
+                              Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: DesignTokens.neutral12
+                                          .withOpacity(0.08),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: PeekieAssetIcon(
+                                    PeekieIconAssets.playlist,
+                                    size: 22,
+                                    color: DesignTokens.neutral12,
+                                  ),
+                                ),
                               ),
                               Positioned(
-                                right: -2,
-                                top: -2,
+                                top: -1,
+                                right: -1,
                                 child: Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: const BoxDecoration(
+                                  width: 10,
+                                  height: 10,
+                                  decoration: BoxDecoration(
                                     color: DesignTokens.error6,
                                     shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -501,27 +574,73 @@ class MiniMusicCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          // PNG gốc (không ColorFilter) — tránh icon biến mất trên nền gradient
-                          PeekieAssetIcon(
-                            PeekieMusicNenIcons.playSkipBackCircle,
-                            size: 32,
-                          ),
-                          PeekieAssetIcon(
-                            PeekieMusicNenIcons.pause,
-                            size: 48,
-                          ),
-                          PeekieAssetIcon(
-                            PeekieMusicNenIcons.playSkipForwardCircle,
-                            size: 32,
-                          ),
-                          PeekieAssetIcon(
-                            PeekieMusicNenIcons.volumeHigh,
-                            size: 28,
-                          ),
-                        ],
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          const pauseSize = 48.0;
+                          const sideSize = 32.0;
+                          const gap = 12.0;
+                          final w = constraints.maxWidth;
+                          final center = w / 2;
+                          return SizedBox(
+                            height: pauseSize,
+                            width: double.infinity,
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Positioned(
+                                  left: center -
+                                      pauseSize / 2 -
+                                      gap -
+                                      sideSize,
+                                  top: 0,
+                                  bottom: 0,
+                                  width: sideSize,
+                                  child: const Center(
+                                    child: PeekieAssetIcon(
+                                      PeekieMusicNenIcons.playSkipBackCircle,
+                                      size: sideSize,
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  left: center - pauseSize / 2,
+                                  top: 0,
+                                  bottom: 0,
+                                  width: pauseSize,
+                                  child: const Center(
+                                    child: PeekieAssetIcon(
+                                      PeekieMusicNenIcons.pause,
+                                      size: pauseSize,
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  left: center + pauseSize / 2 + gap,
+                                  top: 0,
+                                  bottom: 0,
+                                  width: sideSize,
+                                  child: const Center(
+                                    child: PeekieAssetIcon(
+                                      PeekieMusicNenIcons.playSkipForwardCircle,
+                                      size: sideSize,
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  right: 0,
+                                  top: 0,
+                                  bottom: 0,
+                                  child: Center(
+                                    child: PeekieAssetIcon(
+                                      PeekieMusicNenIcons.volumeHigh,
+                                      size: 28,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
