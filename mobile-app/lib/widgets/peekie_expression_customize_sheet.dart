@@ -105,8 +105,11 @@ class _PeekieCustomizeOverlay extends StatefulWidget {
 
 class _PeekieCustomizeOverlayState extends State<_PeekieCustomizeOverlay> {
   static const String _heroAsset = 'assets/images/PEEKIE_vui_ve.png';
+  static const Duration _brightnessDebounce = Duration(milliseconds: 350);
 
   double _brightness = 0.7;
+  Timer? _brightnessDebounceTimer;
+  int? _lastPublishedBrightness;
   late int _selectedIndex;
 
   @override
@@ -119,6 +122,43 @@ class _PeekieCustomizeOverlayState extends State<_PeekieCustomizeOverlay> {
       (e) => e.channelId == initial,
     );
     if (_selectedIndex < 0) _selectedIndex = 0;
+  }
+
+  @override
+  void dispose() {
+    _brightnessDebounceTimer?.cancel();
+    super.dispose();
+  }
+
+  int get _brightnessPercent =>
+      (_brightness * 100).round().clamp(0, 100);
+
+  void _scheduleBrightnessMqtt() {
+    _brightnessDebounceTimer?.cancel();
+    _brightnessDebounceTimer = Timer(_brightnessDebounce, () {
+      _brightnessDebounceTimer = null;
+      unawaited(_publishBrightnessMqtt());
+    });
+  }
+
+  /// Gửi khi người dùng nhả tay (kéo xong); tránh trùng nếu timer debounce đã gửi cùng giá trị.
+  void _onBrightnessChangeEnd() {
+    _brightnessDebounceTimer?.cancel();
+    _brightnessDebounceTimer = null;
+    unawaited(_publishBrightnessMqtt());
+  }
+
+  Future<void> _publishBrightnessMqtt() async {
+    if (!mounted) return;
+    final pct = _brightnessPercent;
+    if (_lastPublishedBrightness == pct) return;
+    try {
+      await MqttService.instance.publishBrightness(pct);
+      if (!mounted) return;
+      _lastPublishedBrightness = pct;
+    } catch (e) {
+      debugPrint('[Brightness] mqtt error: $e');
+    }
   }
 
   Future<void> _applyEmotion(PeekieCustomizeEmotionItem option) async {
@@ -241,7 +281,7 @@ class _PeekieCustomizeOverlayState extends State<_PeekieCustomizeOverlay> {
                         children: [
                           Text('Độ sáng', style: sectionStyle),
                           Text(
-                            '${(_brightness * 100).round()}%',
+                            '${_brightnessPercent}%',
                             style: GoogleFonts.nunito(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
@@ -275,8 +315,11 @@ class _PeekieCustomizeOverlayState extends State<_PeekieCustomizeOverlay> {
                               ),
                               child: Slider(
                                 value: _brightness,
-                                onChanged: (v) =>
-                                    setState(() => _brightness = v),
+                                onChanged: (v) {
+                                  setState(() => _brightness = v);
+                                  _scheduleBrightnessMqtt();
+                                },
+                                onChangeEnd: (_) => _onBrightnessChangeEnd(),
                               ),
                             ),
                           ),

@@ -22,6 +22,7 @@ class MqttService {
   static const bool verboseLogs = true;
 
   static const String videoTopic = 'device/devfpp/babycam/video';
+  static const String brightnessTopic = 'device/devfpp/babycam/brightness';
   static const String videoBasePath = '/home/babycam/videos/';
 
   mqtt_server.MqttServerClient? _client;
@@ -175,6 +176,34 @@ class MqttService {
       _log('publish OK topic=$videoTopic payload=$payload');
     } catch (e, st) {
       _logError('publish exception', e, st);
+    }
+  }
+
+  /// [brightness] 0–100. Payload JSON: `{"brightness":100}`.
+  Future<void> publishBrightness(int brightness) async {
+    try {
+      final ok = await ensureConnected();
+      if (!ok) {
+        _log('publish brightness skipped (not connected)');
+        return;
+      }
+
+      final client = _client;
+      if (client == null || !isConnected) return;
+
+      final b = brightness.clamp(0, 100);
+      final payload = jsonEncode({'brightness': b});
+      final builder = mqtt.MqttClientPayloadBuilder()..addString(payload);
+
+      client.publishMessage(
+        brightnessTopic,
+        mqtt.MqttQos.atLeastOnce,
+        builder.payload!,
+      );
+
+      _log('publish OK topic=$brightnessTopic payload=$payload');
+    } catch (e, st) {
+      _logError('publish brightness exception', e, st);
     }
   }
 
