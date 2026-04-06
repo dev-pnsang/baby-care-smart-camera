@@ -50,4 +50,11 @@ abstract final class PeekieIconAssets {
 abstract final class PeekieImageAssets {
   static const String muaRoiTiTach = 'assets/images/mua_roi_ti_tach.png';
   static const String backgroundNhacNen = 'assets/images/background_nhac_nen.png';
+  static const String tiengSuoiRocRach = 'assets/images/tieng_suoi_roc_rach.png';
+  static const String theGioiCoTichChoBe =
+      'assets/images/the_gioi_co_tich_cho_be.png';
+  static const String auOViDau = 'assets/images/au_o_vi_dau.png';
+  static const String thanhGiong = 'assets/images/thanh_giong.png';
+  static const String truyenCoBeLoLem =
+      'assets/images/truyen_co_be_lo_lem.png';
 }

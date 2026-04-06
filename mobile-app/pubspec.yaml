@@ -19,6 +19,7 @@ dependencies:
   path_provider: ^2.1.5
   tflite_flutter: ^0.10.4
   fftea: ^1.5.0
+  audioplayers: ^6.4.0
 
 dev_dependencies:
   flutter_test:

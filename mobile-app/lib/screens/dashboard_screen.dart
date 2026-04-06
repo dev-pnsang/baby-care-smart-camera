@@ -301,65 +301,86 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       ),
                                     )
                                   else
-                                    Center(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(16),
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.videocam_off,
-                                              size: 60,
-                                              color: Colors.white
-                                                  .withOpacity(0.5),
-                                            ),
-                                            const SizedBox(height: 10),
-                                            Text(
-                                              _errorMessage ??
-                                                  'Không thể kết nối camera',
-                                              style: TextStyle(
-                                                color: Colors.white
-                                                    .withOpacity(0.7),
-                                                fontSize: 16,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                            if (_errorMessage != null) ...[
-                                              const SizedBox(height: 20),
-                                              Wrap(
-                                                spacing: 12,
-                                                runSpacing: 8,
-                                                alignment: WrapAlignment.center,
+                                    LayoutBuilder(
+                                      builder: (context, constraints) {
+                                        final compact =
+                                            constraints.maxHeight < 180;
+                                        final iconSize = compact ? 44.0 : 60.0;
+                                        final gap1 = compact ? 8.0 : 10.0;
+                                        final gap2 = compact ? 12.0 : 20.0;
+                                        final fontSize = compact ? 13.0 : 16.0;
+
+                                        return Center(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(16),
+                                            child: SingleChildScrollView(
+                                              physics:
+                                                  const BouncingScrollPhysics(),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
                                                 children: [
-                                                  if (_errorMessage?.contains(
-                                                          'Chưa cấu hình') ==
-                                                      true)
-                                                    FilledButton.icon(
-                                                      onPressed: () =>
-                                                          Navigator
-                                                              .pushReplacementNamed(
-                                                                  context,
-                                                                  '/settings'),
-                                                      icon: const Icon(
-                                                          Icons.settings),
-                                                      label: const Text(
-                                                          'Vào Cài đặt'),
-                                                    ),
-                                                  FilledButton.icon(
-                                                    onPressed:
-                                                        _retryConnection,
-                                                    icon: const Icon(
-                                                        Icons.refresh),
-                                                    label:
-                                                        const Text('Thử lại'),
+                                                  Icon(
+                                                    Icons.videocam_off,
+                                                    size: iconSize,
+                                                    color: Colors.white
+                                                        .withOpacity(0.5),
                                                   ),
+                                                  SizedBox(height: gap1),
+                                                  Text(
+                                                    _errorMessage ??
+                                                        'Không thể kết nối camera',
+                                                    style: TextStyle(
+                                                      color: Colors.white
+                                                          .withOpacity(0.7),
+                                                      fontSize: fontSize,
+                                                    ),
+                                                    maxLines: compact ? 3 : 6,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                  if (_errorMessage != null) ...[
+                                                    SizedBox(height: gap2),
+                                                    Wrap(
+                                                      spacing: 12,
+                                                      runSpacing: 8,
+                                                      alignment:
+                                                          WrapAlignment.center,
+                                                      children: [
+                                                        if (_errorMessage
+                                                                ?.contains(
+                                                                    'Chưa cấu hình') ==
+                                                            true)
+                                                          FilledButton.icon(
+                                                            onPressed: () =>
+                                                                Navigator
+                                                                    .pushReplacementNamed(
+                                                                        context,
+                                                                        '/settings'),
+                                                            icon: const Icon(
+                                                                Icons.settings),
+                                                            label: const Text(
+                                                                'Vào Cài đặt'),
+                                                          ),
+                                                        FilledButton.icon(
+                                                          onPressed:
+                                                              _retryConnection,
+                                                          icon: const Icon(
+                                                              Icons.refresh),
+                                                          label: const Text(
+                                                              'Thử lại'),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
                                                 ],
                                               ),
-                                            ],
-                                          ],
-                                        ),
-                                      ),
+                                            ),
+                                          ),
+                                        );
+                                      },
                                     ),
                                   if (_videoPlayerController != null &&
                                       _errorMessage == null)

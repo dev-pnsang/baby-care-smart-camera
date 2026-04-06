@@ -4,6 +4,7 @@ import 'theme/app_theme.dart';
 import 'providers/baby_status_provider.dart';
 import 'providers/camera_provider.dart';
 import 'providers/camera_settings_provider.dart';
+import 'providers/music_player_provider.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/expression_controller_screen.dart';
 import 'screens/lullaby_player_screen.dart';
@@ -23,6 +24,7 @@ class BabyCareSmartCamApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => BabyStatusProvider()),
         ChangeNotifierProvider(create: (_) => CameraProvider()),
         ChangeNotifierProvider(create: (_) => CameraSettingsProvider()),
+        ChangeNotifierProvider(create: (_) => MusicPlayerProvider()),
       ],
       child: MaterialApp(
         title: 'BabyCare SmartCam',

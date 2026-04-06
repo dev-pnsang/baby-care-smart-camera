@@ -6,6 +6,8 @@ import '../theme/design_tokens.dart';
 import '../theme/peekie_gradients.dart';
 import '../theme/peekie_icon_assets.dart';
 import '../providers/camera_provider.dart';
+import '../providers/music_player_provider.dart';
+import '../models/song.dart';
 import 'peekie_asset_icon.dart';
 
 class PeekieTopBar extends StatelessWidget {
@@ -395,17 +397,17 @@ class EnvStatCard extends StatelessWidget {
 
 class MiniMusicCard extends StatelessWidget {
   final VoidCallback onOpenLibrary;
-  final double progress;
 
   const MiniMusicCard({
     super.key,
     required this.onOpenLibrary,
-    this.progress = 0.45,
   });
 
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
+    final player = context.watch<MusicPlayerProvider>();
+    final song = player.currentSong;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -530,7 +532,7 @@ class MiniMusicCard extends StatelessWidget {
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(14),
                               child: Image.asset(
-                                PeekieImageAssets.muaRoiTiTach,
+                                song.thumbnailAsset,
                                 width: 52,
                                 height: 52,
                                 fit: BoxFit.cover,
@@ -544,14 +546,14 @@ class MiniMusicCard extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Mưa rơi tí tách',
+                                  song.title,
                                   style: t.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w800,
                                     color: DesignTokens.neutral12,
                                   ),
                                 ),
                                 Text(
-                                  'Tiếng ồn trắng',
+                                  _categoryLabel(song.category),
                                   style: t.bodySmall?.copyWith(
                                     color: DesignTokens.neutral10,
                                   ),
@@ -565,7 +567,7 @@ class MiniMusicCard extends StatelessWidget {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(6),
                         child: LinearProgressIndicator(
-                          value: progress,
+                          value: player.progress,
                           minHeight: 6,
                           backgroundColor: DesignTokens.babyBlue3,
                           valueColor: const AlwaysStoppedAnimation<Color>(
@@ -595,10 +597,18 @@ class MiniMusicCard extends StatelessWidget {
                                   top: 0,
                                   bottom: 0,
                                   width: sideSize,
-                                  child: const Center(
-                                    child: PeekieAssetIcon(
-                                      PeekieMusicNenIcons.playSkipBackCircle,
-                                      size: sideSize,
+                                  child: Center(
+                                    child: InkWell(
+                                      onTap: () => player.previous(),
+                                      borderRadius: BorderRadius.circular(999),
+                                      child: const Padding(
+                                        padding: EdgeInsets.all(4),
+                                        child: PeekieAssetIcon(
+                                          PeekieMusicNenIcons
+                                              .playSkipBackCircle,
+                                          size: sideSize,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -607,10 +617,31 @@ class MiniMusicCard extends StatelessWidget {
                                   top: 0,
                                   bottom: 0,
                                   width: pauseSize,
-                                  child: const Center(
-                                    child: PeekieAssetIcon(
-                                      PeekieMusicNenIcons.pause,
-                                      size: pauseSize,
+                                  child: Center(
+                                    child: InkWell(
+                                      onTap: () => player.togglePlayPause(),
+                                      borderRadius: BorderRadius.circular(999),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(2),
+                                        child: player.isPlaying
+                                            ? const PeekieAssetIcon(
+                                                PeekieMusicNenIcons.pause,
+                                                size: pauseSize,
+                                              )
+                                            : Container(
+                                                width: pauseSize,
+                                                height: pauseSize,
+                                                decoration: const BoxDecoration(
+                                                  color: DesignTokens.neutral12,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: const Icon(
+                                                  Icons.play_arrow_rounded,
+                                                  color: Colors.white,
+                                                  size: 34,
+                                                ),
+                                              ),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -619,10 +650,18 @@ class MiniMusicCard extends StatelessWidget {
                                   top: 0,
                                   bottom: 0,
                                   width: sideSize,
-                                  child: const Center(
-                                    child: PeekieAssetIcon(
-                                      PeekieMusicNenIcons.playSkipForwardCircle,
-                                      size: sideSize,
+                                  child: Center(
+                                    child: InkWell(
+                                      onTap: () => player.next(),
+                                      borderRadius: BorderRadius.circular(999),
+                                      child: const Padding(
+                                        padding: EdgeInsets.all(4),
+                                        child: PeekieAssetIcon(
+                                          PeekieMusicNenIcons
+                                              .playSkipForwardCircle,
+                                          size: sideSize,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -631,9 +670,19 @@ class MiniMusicCard extends StatelessWidget {
                                   top: 0,
                                   bottom: 0,
                                   child: Center(
-                                    child: PeekieAssetIcon(
-                                      PeekieMusicNenIcons.volumeHigh,
-                                      size: 28,
+                                    child: InkWell(
+                                      onTap: () => player.toggleMute(),
+                                      borderRadius: BorderRadius.circular(999),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(6),
+                                        child: Icon(
+                                          player.isMuted
+                                              ? Icons.volume_off_rounded
+                                              : Icons.volume_up_rounded,
+                                          size: 26,
+                                          color: DesignTokens.neutral12,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -651,6 +700,17 @@ class MiniMusicCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+String _categoryLabel(SongCategory c) {
+  switch (c) {
+    case SongCategory.whiteNoise:
+      return 'Tiếng ồn trắng';
+    case SongCategory.lullaby:
+      return 'Hát ru';
+    case SongCategory.fairyTale:
+      return 'Truyện cổ tích';
   }
 }
 

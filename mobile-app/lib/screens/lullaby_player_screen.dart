@@ -1,12 +1,13 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../theme/design_tokens.dart';
 import '../theme/peekie_icon_assets.dart';
 import '../models/song.dart';
-import '../widgets/neumorphic_button.dart';
+import '../providers/music_player_provider.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/peekie_asset_icon.dart';
+import '../widgets/peekie_home_widgets.dart';
 
 class LullabyPlayerScreen extends StatefulWidget {
   const LullabyPlayerScreen({super.key});
@@ -16,63 +17,53 @@ class LullabyPlayerScreen extends StatefulWidget {
 }
 
 class _LullabyPlayerScreenState extends State<LullabyPlayerScreen> {
-  final List<Song> _songs = [
-    Song(
-      id: '1',
-      title: 'Ru Con Ngủ',
-      artist: 'Nhạc thiếu nhi',
-      icon: '🌙',
-      duration: const Duration(minutes: 3, seconds: 45),
-    ),
-    Song(
-      id: '2',
-      title: 'Ru Con Ngủ',
-      artist: 'Nhạc thiếu nhi',
-      icon: '🌙',
-      duration: const Duration(minutes: 4, seconds: 20),
-    ),
-    Song(
-      id: '3',
-      title: 'Tiếng Sóng Biển',
-      artist: 'Nhạc thiếu nhi',
-      icon: '🐑',
-      duration: const Duration(minutes: 3, seconds: 15),
-    ),
-    Song(
-      id: '4',
-      title: 'Tiếng Ồn Trắng',
-      artist: 'Nhạc thiếu nhi',
-      icon: '⭐',
-      duration: const Duration(minutes: 5, seconds: 10),
-    ),
-    Song(
-      id: '5',
-      title: 'Nhạc Thư Xận',
-      artist: 'Nhạc thiếu nhi',
-      icon: '🎶',
-      duration: const Duration(minutes: 4, seconds: 30),
-    ),
-  ];
+  SongCategory? _selectedCategory;
+  String _query = '';
 
-  Song? _currentSong;
-  bool _isPlaying = false;
-  Duration _currentPosition = Duration.zero;
-
-  @override
-  void initState() {
-    super.initState();
-    _currentSong = _songs[0];
+  String _formatDurationLabel(Duration duration) {
+    final totalMinutes = duration.inMinutes;
+    if (totalMinutes >= 60) {
+      final hours = (totalMinutes / 60).round();
+      return '$hours tiếng';
+    }
+    return '$totalMinutes phút';
   }
 
-  String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final minutes = twoDigits(duration.inMinutes.remainder(60));
-    final seconds = twoDigits(duration.inSeconds.remainder(60));
-    return '$minutes:$seconds';
+  String _categoryLabel(SongCategory c) {
+    switch (c) {
+      case SongCategory.whiteNoise:
+        return 'Tiếng ồn trắng';
+      case SongCategory.lullaby:
+        return 'Hát ru';
+      case SongCategory.fairyTale:
+        return 'Truyện cổ tích';
+    }
+  }
+
+  List<Song> get _filteredSongs {
+    final q = _query.trim().toLowerCase();
+    final songs = context.read<MusicPlayerProvider>().songs;
+    return songs.where((s) {
+      final catOk = _selectedCategory == null || s.category == _selectedCategory;
+      final qOk = q.isEmpty || s.title.toLowerCase().contains(q);
+      return catOk && qOk;
+    }).toList(growable: false);
+  }
+
+  Future<void> _togglePlayFor(Song song) async {
+    final player = context.read<MusicPlayerProvider>();
+    final isSame = player.currentSong.id == song.id;
+    if (isSame) {
+      await player.togglePlayPause();
+    } else {
+      await player.playSong(song);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final songs = _filteredSongs;
+    final player = context.watch<MusicPlayerProvider>();
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -84,28 +75,9 @@ class _LullabyPlayerScreenState extends State<LullabyPlayerScreen> {
               // Main content
               Column(
                 children: [
-                  // App Bar
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Row(
-                      children: [
-                        NeumorphicButton(
-                          width: 50,
-                          height: 50,
-                          onPressed: () => Navigator.pop(context),
-                          child: const Icon(
-                            Icons.arrow_back_ios_new,
-                            color: AppTheme.textDark,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Text(
-                          'Nhạc nền',
-                          style: Theme.of(context).textTheme.headlineMedium,
-                        ),
-                      ],
-                    ),
+                  PeekieTopBar(
+                    onBack: () => Navigator.maybePop(context),
+                    onSettings: () => Navigator.pushNamed(context, '/settings'),
                   ),
 
                   Padding(
@@ -113,64 +85,28 @@ class _LullabyPlayerScreenState extends State<LullabyPlayerScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                DesignTokens.babyBlue3,
-                                DesignTokens.babyBlue2,
-                              ],
-                            ),
+                        // Banner: toàn bộ nội dung nằm trong PNG — không ghép Text/ảnh để tránh chồng lớp.
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
                             borderRadius: BorderRadius.circular(24),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: DesignTokens.sunlight6,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  'Kho truyện',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelSmall
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w800,
-                                        color: DesignTokens.neutral12,
-                                      ),
-                                ),
+                            onTap: () {},
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(24),
+                              child: Image.asset(
+                                PeekieImageAssets.theGioiCoTichChoBe,
+                                width: double.infinity,
+                                fit: BoxFit.fitWidth,
+                                alignment: Alignment.center,
+                                filterQuality: FilterQuality.medium,
+                                gaplessPlayback: true,
                               ),
-                              const SizedBox(height: 10),
-                              Text(
-                                'Thế giới cổ tích cho bé',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineSmall
-                                    ?.copyWith(color: DesignTokens.neutral12),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'Tuyển chọn hay — đưa bé vào giấc mơ êm ái',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(color: DesignTokens.neutral10),
-                              ),
-                              const SizedBox(height: 12),
-                              FilledButton.tonal(
-                                onPressed: () {},
-                                child: const Text('Vào ngay'),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
                         TextField(
+                          onChanged: (v) => setState(() => _query = v),
                           decoration: InputDecoration(
                             hintText: 'Tìm kiếm',
                             prefixIcon: const Icon(Icons.search_rounded),
@@ -190,26 +126,33 @@ class _LullabyPlayerScreenState extends State<LullabyPlayerScreen> {
                             children: [
                               _FilterChip(
                                 label: 'Tất cả',
-                                selected: true,
-                                onSelected: (_) {},
+                                selected: _selectedCategory == null,
+                                onSelected: (_) =>
+                                    setState(() => _selectedCategory = null),
                               ),
                               const SizedBox(width: 8),
                               _FilterChip(
                                 label: 'Tiếng ồn trắng',
-                                selected: false,
-                                onSelected: (_) {},
+                                selected:
+                                    _selectedCategory == SongCategory.whiteNoise,
+                                onSelected: (_) => setState(() =>
+                                    _selectedCategory = SongCategory.whiteNoise),
                               ),
                               const SizedBox(width: 8),
                               _FilterChip(
                                 label: 'Hát ru',
-                                selected: false,
-                                onSelected: (_) {},
+                                selected:
+                                    _selectedCategory == SongCategory.lullaby,
+                                onSelected: (_) => setState(
+                                    () => _selectedCategory = SongCategory.lullaby),
                               ),
                               const SizedBox(width: 8),
                               _FilterChip(
                                 label: 'Truyện cổ',
-                                selected: false,
-                                onSelected: (_) {},
+                                selected:
+                                    _selectedCategory == SongCategory.fairyTale,
+                                onSelected: (_) => setState(
+                                    () => _selectedCategory = SongCategory.fairyTale),
                               ),
                             ],
                           ),
@@ -221,263 +164,47 @@ class _LullabyPlayerScreenState extends State<LullabyPlayerScreen> {
 
                   // Song Cards List
                   Expanded(
-                    child: ListView.builder(
+                    child: songs.isEmpty
+                        ? Center(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 24),
+                              child: Text(
+                                'Không có nội dung phù hợp.',
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                      color: DesignTokens.neutral10,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                              ),
+                            ),
+                          )
+                        : ListView.builder(
                       padding: const EdgeInsets.only(
                         left: 20,
                         right: 20,
-                        bottom: 100,
+                        bottom: 24,
                       ),
-                      itemCount: _songs.length,
+                      itemCount: songs.length,
                       itemBuilder: (context, index) {
-                        final song = _songs[index];
-                        final isCurrent = _currentSong?.id == song.id;
-
+                        final song = songs[index];
+                        final isCurrent = player.currentSong.id == song.id;
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 16),
                           child: _SongCard(
                             song: song,
-                            isCurrent: isCurrent,
-                            index: index,
-                            onTap: () {
-                              setState(() {
-                                _currentSong = song;
-                                _isPlaying = true;
-                              });
-                            },
+                            isPlaying: isCurrent && player.isPlaying,
+                            onTap: () => _togglePlayFor(song),
+                            subtitle:
+                                '${_categoryLabel(song.category)} • ${_formatDurationLabel(song.duration)}',
                           ),
                         );
                       },
                     ),
                   ),
-
-                  // Player UI (Floating Panel)
-                  if (_currentSong != null)
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        left: 20.0,
-                        right: 20.0,
-                        bottom: 100.0,
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                          child: Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: AppTheme.glassSurface,
-                              borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.2),
-                                width: 1,
-                              ),
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Song Info
-                                Row(
-                                  children: [
-                                    Text(
-                                      _currentSong!.icon,
-                                      style: const TextStyle(fontSize: 32),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            _currentSong!.title,
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: AppTheme.textDark,
-                                            ),
-                                          ),
-                                          Text(
-                                            _currentSong!.artist,
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                              color: AppTheme.textLight,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-
-                                // Progress Bar
-                                Stack(
-                                  children: [
-                                    Container(
-                                      height: 4,
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey.shade300,
-                                        borderRadius: BorderRadius.circular(2),
-                                      ),
-                                    ),
-                                    FractionallySizedBox(
-                                      widthFactor: _currentPosition.inSeconds /
-                                          (_currentSong!.duration.inSeconds > 0
-                                              ? _currentSong!.duration.inSeconds
-                                              : 1),
-                                      child: Container(
-                                        height: 4,
-                                        decoration: BoxDecoration(
-                                          gradient: AppTheme.progressGradient,
-                                          borderRadius: BorderRadius.circular(2),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        _formatDuration(_currentPosition),
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: AppTheme.textLight,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    Flexible(
-                                      child: Text(
-                                        _formatDuration(_currentSong!.duration),
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: AppTheme.textLight,
-                                        ),
-                                        textAlign: TextAlign.end,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-
-                                // Controls
-                                LayoutBuilder(
-                                  builder: (context, constraints) {
-                                    final screenWidth = constraints.maxWidth;
-                                    final isSmallScreen = screenWidth < 300;
-                                    final buttonSize = isSmallScreen ? 45.0 : 50.0;
-                                    final playButtonSize = isSmallScreen ? 60.0 : 70.0;
-                                    final spacing = isSmallScreen ? 12.0 : 20.0;
-                                    
-                                    return Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        NeumorphicButton(
-                                          width: buttonSize,
-                                          height: buttonSize,
-                                          onPressed: () {
-                                            // Previous song
-                                          },
-                                          child: PeekieAssetIcon(
-                                            PeekieMusicNenIcons.playSkipBackCircle,
-                                            size: isSmallScreen ? 24 : 28,
-                                            color: AppTheme.textDark,
-                                          ),
-                                        ),
-                                        SizedBox(width: spacing),
-                                        NeumorphicButton(
-                                          width: playButtonSize,
-                                          height: playButtonSize,
-                                          isActive: _isPlaying,
-                                          onPressed: () {
-                                            setState(() {
-                                              _isPlaying = !_isPlaying;
-                                            });
-                                          },
-                                          child: _isPlaying
-                                              ? PeekieAssetIcon(
-                                                  PeekieMusicNenIcons.pause,
-                                                  size: isSmallScreen ? 30 : 34,
-                                                )
-                                              : Icon(
-                                                  // Chưa có play.png trong bộ nhạc nền
-                                                  Icons.play_arrow_rounded,
-                                                  color: AppTheme.primaryBlue,
-                                                  size: isSmallScreen ? 28 : 32,
-                                                ),
-                                        ),
-                                        SizedBox(width: spacing),
-                                        NeumorphicButton(
-                                          width: buttonSize,
-                                          height: buttonSize,
-                                          onPressed: () {
-                                            // Next song
-                                          },
-                                          child: PeekieAssetIcon(
-                                            PeekieMusicNenIcons.playSkipForwardCircle,
-                                            size: isSmallScreen ? 24 : 28,
-                                            color: AppTheme.textDark,
-                                          ),
-                                        ),
-                                        SizedBox(width: spacing),
-                                        NeumorphicButton(
-                                          width: buttonSize,
-                                          height: buttonSize,
-                                          onPressed: () {
-                                            // Shuffle/Repeat
-                                          },
-                                          child: Icon(
-                                            Icons.shuffle,
-                                            color: AppTheme.textDark,
-                                            size: isSmallScreen ? 18 : 20,
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                // Volume Control
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    PeekieAssetIcon(
-                                      PeekieMusicNenIcons.volumeHigh,
-                                      size: 22,
-                                      color: AppTheme.textLight,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Container(
-                                        height: 4,
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey.shade300,
-                                          borderRadius: BorderRadius.circular(2),
-                                        ),
-                                        child: FractionallySizedBox(
-                                          widthFactor: 0.7,
-                                          child: Container(
-                                            height: 4,
-                                            decoration: BoxDecoration(
-                                              gradient: AppTheme.progressGradient,
-                                              borderRadius: BorderRadius.circular(2),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
                 ],
               ),
               // Floating bottom navigation bar
@@ -522,89 +249,135 @@ class _FilterChip extends StatelessWidget {
 
 class _SongCard extends StatelessWidget {
   final Song song;
-  final bool isCurrent;
-  final int index;
+  final bool isPlaying;
   final VoidCallback onTap;
+  final String subtitle;
 
   const _SongCard({
     required this.song,
-    required this.isCurrent,
-    required this.index,
+    required this.isPlaying,
+    required this.onTap,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final bg = isPlaying ? const Color(0xFFE2F1FF) : Colors.white;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Ink(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: DesignTokens.neutral12.withOpacity(0.06),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 56,
+                height: 56,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.asset(
+                    song.thumbnailAsset,
+                    fit: BoxFit.cover,
+                    filterQuality: FilterQuality.medium,
+                    gaplessPlayback: true,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      song.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: t.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: DesignTokens.neutral12,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: t.bodySmall?.copyWith(
+                        color: DesignTokens.neutral10,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              _PlayCircleButton(
+                isPlaying: isPlaying,
+                onTap: onTap,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PlayCircleButton extends StatelessWidget {
+  final bool isPlaying;
+  final VoidCallback onTap;
+
+  const _PlayCircleButton({
+    required this.isPlaying,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return NeumorphicButton(
-      onPressed: onTap,
-      isActive: isCurrent,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            // Icon
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: AppTheme.primaryBlue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: Text(
-                  song.icon,
-                  style: const TextStyle(fontSize: 24),
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            // Song Info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    song.title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textDark,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    song.artist,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppTheme.textLight,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Play Button or Arrow
-            index == 0
-                ? Icon(
-                    Icons.arrow_forward_ios,
-                    color: AppTheme.textLight,
-                    size: 20,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(999),
+        child: SizedBox(
+          width: 44,
+          height: 44,
+          child: Center(
+            // `pause.png` là icon tròn + glyph trong 1 PNG → hiển thị raw.
+            child: isPlaying
+                ? const PeekieAssetIcon(
+                    PeekieMusicNenIcons.pause,
+                    size: 44,
                   )
-                : NeumorphicButton(
-                    width: 45,
-                    height: 45,
-                    onPressed: onTap,
-                    child: isCurrent
-                        ? PeekieAssetIcon(
-                            PeekieMusicNenIcons.pause,
-                            size: 26,
-                          )
-                        : Icon(
-                            Icons.play_arrow_rounded,
-                            color: AppTheme.primaryBlue,
-                            size: 28,
-                          ),
+                : Container(
+                    width: 44,
+                    height: 44,
+                    decoration: const BoxDecoration(
+                      color: DesignTokens.neutral12,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.play_arrow_rounded,
+                      color: Colors.white,
+                      size: 28,
+                    ),
                   ),
-          ],
+          ),
         ),
       ),
     );
