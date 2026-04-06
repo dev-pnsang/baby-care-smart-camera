@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../providers/camera_provider.dart';
 import '../services/mqtt_service.dart';
@@ -106,6 +107,7 @@ class _PeekieCustomizeOverlay extends StatefulWidget {
 class _PeekieCustomizeOverlayState extends State<_PeekieCustomizeOverlay> {
   static const String _heroAsset = 'assets/images/PEEKIE_vui_ve.png';
   static const Duration _brightnessDebounce = Duration(milliseconds: 350);
+  static const String _prefsKeyBrightnessPercent = 'peekie_brightness_percent';
 
   double _brightness = 0.7;
   Timer? _brightnessDebounceTimer;
@@ -117,11 +119,37 @@ class _PeekieCustomizeOverlayState extends State<_PeekieCustomizeOverlay> {
     super.initState();
     // Warm up the MQTT connection so a tap can publish immediately.
     unawaited(MqttService.instance.ensureConnected());
+    unawaited(_loadLastBrightness());
     final initial = widget.initialChannelId ?? 'vui_mung';
     _selectedIndex = kPeekieCustomizeEmotions.indexWhere(
       (e) => e.channelId == initial,
     );
     if (_selectedIndex < 0) _selectedIndex = 0;
+  }
+
+  Future<void> _loadLastBrightness() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getInt(_prefsKeyBrightnessPercent);
+      if (!mounted) return;
+      if (saved == null) return;
+      final pct = saved.clamp(0, 100);
+      setState(() {
+        _brightness = pct / 100.0;
+        _lastPublishedBrightness = pct;
+      });
+    } catch (e) {
+      debugPrint('[Brightness] prefs load error: $e');
+    }
+  }
+
+  Future<void> _saveLastBrightness(int pct) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_prefsKeyBrightnessPercent, pct.clamp(0, 100));
+    } catch (e) {
+      debugPrint('[Brightness] prefs save error: $e');
+    }
   }
 
   @override
@@ -156,6 +184,7 @@ class _PeekieCustomizeOverlayState extends State<_PeekieCustomizeOverlay> {
       await MqttService.instance.publishBrightness(pct);
       if (!mounted) return;
       _lastPublishedBrightness = pct;
+      unawaited(_saveLastBrightness(pct));
     } catch (e) {
       debugPrint('[Brightness] mqtt error: $e');
     }
