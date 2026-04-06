@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -5,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/camera_provider.dart';
+import '../services/mqtt_service.dart';
 import '../theme/design_tokens.dart';
 
 class PeekieCustomizeEmotionItem {
@@ -70,18 +72,31 @@ const List<PeekieCustomizeEmotionItem> kPeekieCustomizeEmotions = [
 ];
 
 /// Full-screen overlay + bottom sheet matching `Tuỳ chỉnh màn hình` mockup.
-Future<void> showPeekieExpressionCustomizeSheet(BuildContext context) {
+Future<void> showPeekieExpressionCustomizeSheet(
+  BuildContext context, {
+  String? initialChannelId,
+  ValueChanged<PeekieCustomizeEmotionItem>? onSelected,
+}) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     barrierColor: Colors.black.withOpacity(0.45),
-    builder: (ctx) => const _PeekieCustomizeOverlay(),
+    builder: (ctx) => _PeekieCustomizeOverlay(
+      initialChannelId: initialChannelId,
+      onSelected: onSelected,
+    ),
   );
 }
 
 class _PeekieCustomizeOverlay extends StatefulWidget {
-  const _PeekieCustomizeOverlay();
+  const _PeekieCustomizeOverlay({
+    this.initialChannelId,
+    this.onSelected,
+  });
+
+  final String? initialChannelId;
+  final ValueChanged<PeekieCustomizeEmotionItem>? onSelected;
 
   @override
   State<_PeekieCustomizeOverlay> createState() =>
@@ -97,16 +112,25 @@ class _PeekieCustomizeOverlayState extends State<_PeekieCustomizeOverlay> {
   @override
   void initState() {
     super.initState();
-    _selectedIndex =
-        kPeekieCustomizeEmotions.indexWhere((e) => e.channelId == 'vui_mung');
+    // Warm up the MQTT connection so a tap can publish immediately.
+    unawaited(MqttService.instance.ensureConnected());
+    final initial = widget.initialChannelId ?? 'vui_mung';
+    _selectedIndex = kPeekieCustomizeEmotions.indexWhere(
+      (e) => e.channelId == initial,
+    );
     if (_selectedIndex < 0) _selectedIndex = 0;
   }
 
   Future<void> _applyEmotion(PeekieCustomizeEmotionItem option) async {
     if (!mounted) return;
+    widget.onSelected?.call(option);
     try {
       await context.read<CameraProvider>().notifyHardware(option.channelId);
-    } catch (_) {}
+      await MqttService.instance.publishEmotionVideo(option.channelId);
+    } catch (e) {
+      // Best-effort only
+      debugPrint('[Emotion] mqtt error: $e');
+    }
   }
 
   @override
@@ -301,20 +325,64 @@ class _PeekieCustomizeOverlayState extends State<_PeekieCustomizeOverlay> {
                                     SizedBox(
                                       height: iconH,
                                       width: w,
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 4,
-                                          vertical: 2,
-                                        ),
-                                        child: Image.asset(
-                                          item.assetPath,
-                                          fit: BoxFit.contain,
-                                          alignment: Alignment.bottomCenter,
-                                          errorBuilder: (_, __, ___) => Icon(
-                                            Icons.sentiment_satisfied_alt,
-                                            color: DesignTokens.neutral9,
+                                      child: Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          AnimatedContainer(
+                                            duration:
+                                                const Duration(milliseconds: 150),
+                                            curve: Curves.easeOut,
+                                            margin: const EdgeInsets.symmetric(
+                                              horizontal: 4,
+                                              vertical: 2,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: selected
+                                                  ? const Color(0xFFEAF4FF)
+                                                  : Colors.transparent,
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              border: Border.all(
+                                                color: selected
+                                                    ? DesignTokens.babyBlue7
+                                                    : Colors.transparent,
+                                                width: 2,
+                                              ),
+                                            ),
+                                            child: Center(
+                                              child: Image.asset(
+                                                item.assetPath,
+                                                fit: BoxFit.contain,
+                                                alignment:
+                                                    Alignment.bottomCenter,
+                                                errorBuilder:
+                                                    (_, __, ___) => Icon(
+                                                  Icons
+                                                      .sentiment_satisfied_alt,
+                                                  color: DesignTokens.neutral9,
+                                                ),
+                                              ),
+                                            ),
                                           ),
-                                        ),
+                                          if (selected)
+                                            Positioned(
+                                              top: 4,
+                                              right: 4,
+                                              child: Container(
+                                                width: 18,
+                                                height: 18,
+                                                decoration: const BoxDecoration(
+                                                  color: DesignTokens.babyBlue7,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: const Icon(
+                                                  Icons.check,
+                                                  size: 12,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                        ],
                                       ),
                                     ),
                                     Text(
@@ -323,9 +391,7 @@ class _PeekieCustomizeOverlayState extends State<_PeekieCustomizeOverlay> {
                                         fontWeight: selected
                                             ? FontWeight.w800
                                             : FontWeight.w600,
-                                        color: selected
-                                            ? DesignTokens.babyBlue6
-                                            : DesignTokens.neutral12,
+                                        color: DesignTokens.neutral12,
                                       ),
                                       textAlign: TextAlign.center,
                                       maxLines: 2,

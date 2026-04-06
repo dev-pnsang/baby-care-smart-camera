@@ -20,6 +20,7 @@ dependencies:
   tflite_flutter: ^0.10.4
   fftea: ^1.5.0
   audioplayers: ^6.4.0
+  mqtt_client: ^10.3.0
 
 dev_dependencies:
   flutter_test:

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -14,6 +16,7 @@ import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/peekie_asset_icon.dart';
 import '../widgets/peekie_expression_customize_sheet.dart';
 import '../widgets/peekie_home_widgets.dart';
+import '../services/mqtt_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -34,6 +37,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _soothingMode = false;
   bool _expressionScreenOn = true;
   PeekieQuickExpression _quickExpression = PeekieQuickExpression.auto;
+  String _customEmotionChannelId = 'vui_mung';
 
   bool _cryDialogOffered = false;
   bool _noiseDialogOffered = false;
@@ -483,9 +487,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               notifyExpressionIfEnabled(context, 'calm');
                             },
                             onCustomize: () {
-                              setState(() => _quickExpression =
-                                  PeekieQuickExpression.custom);
-                              showPeekieExpressionCustomizeSheet(context);
+                              // Start MQTT connection early so emotion taps can publish immediately.
+                              unawaited(MqttService.instance.ensureConnected());
+                              showPeekieExpressionCustomizeSheet(
+                                context,
+                                initialChannelId: _customEmotionChannelId,
+                                onSelected: (opt) {
+                                  if (!mounted) return;
+                                  setState(() {
+                                    _quickExpression =
+                                        PeekieQuickExpression.custom;
+                                    _customEmotionChannelId = opt.channelId;
+                                  });
+                                },
+                              );
                             },
                           ),
                           SoothingModeBar(

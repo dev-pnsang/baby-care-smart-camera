@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'theme/app_theme.dart';
@@ -11,6 +13,9 @@ import 'screens/lullaby_player_screen.dart';
 import 'screens/settings_screen.dart';
 
 void main() {
+  // Broker uses self-signed certificate (wss). Allow it for this host only.
+  // NOTE: This is a security trade-off; ideally install a valid cert or pin.
+  HttpOverrides.global = _MqttHttpOverrides(allowedHost: 'mqtt.goads.com.vn');
   runApp(const BabyCareSmartCamApp());
 }
 
@@ -39,6 +44,20 @@ class BabyCareSmartCamApp extends StatelessWidget {
         },
       ),
     );
+  }
+}
+
+class _MqttHttpOverrides extends HttpOverrides {
+  final String allowedHost;
+  _MqttHttpOverrides({required this.allowedHost});
+
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    final client = super.createHttpClient(context);
+    client.badCertificateCallback =
+        (X509Certificate cert, String host, int port) =>
+            host == allowedHost || host.endsWith('.goads.com.vn');
+    return client;
   }
 }
 

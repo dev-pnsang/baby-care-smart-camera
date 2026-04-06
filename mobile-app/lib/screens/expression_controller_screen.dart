@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/design_tokens.dart';
-import '../models/expression_type.dart';
 import '../providers/camera_provider.dart';
-import '../widgets/expression_bubble_widget.dart';
+import '../services/mqtt_service.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
+import '../widgets/peekie_expression_customize_sheet.dart';
 
 class ExpressionControllerScreen extends StatefulWidget {
   const ExpressionControllerScreen({super.key});
@@ -16,21 +16,35 @@ class ExpressionControllerScreen extends StatefulWidget {
 
 class _ExpressionControllerScreenState
     extends State<ExpressionControllerScreen> {
-  ExpressionType? _selectedExpression;
+  int _selectedIndex = -1;
 
-  Future<void> _handleExpressionTap(ExpressionType type) async {
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex =
+        kPeekieCustomizeEmotions.indexWhere((e) => e.channelId == 'vui_mung');
+    if (_selectedIndex < 0) _selectedIndex = 0;
+  }
+
+  Future<void> _handleExpressionTap(PeekieCustomizeEmotionItem item) async {
     setState(() {
-      _selectedExpression = type;
+      _selectedIndex = kPeekieCustomizeEmotions.indexWhere(
+        (e) => e.channelId == item.channelId,
+      );
     });
 
     final cameraProvider = Provider.of<CameraProvider>(context, listen: false);
-    
+
     // Notify hardware with expression ID and trigger sound effect
-    await cameraProvider.notifyHardware(type.hardwareChannel);
+    await cameraProvider.notifyHardware(item.channelId);
+    try {
+      await MqttService.instance.publishEmotionVideo(item.channelId);
+    } catch (_) {}
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -50,7 +64,10 @@ class _ExpressionControllerScreenState
                         Center(
                           child: Text(
                             'Tuỳ chỉnh nâng cao',
-                            style: Theme.of(context).textTheme.headlineMedium,
+                            style: t.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: DesignTokens.neutral12,
+                            ),
                           ),
                         ),
                       ],
@@ -60,20 +77,26 @@ class _ExpressionControllerScreenState
                   // Expression Grid
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.all(25.0),
-                      child: GridView.count(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 25,
-                        crossAxisSpacing: 25,
-                        childAspectRatio: 0.85,
-                        children: ExpressionType.values.map((expression) {
-                          final isSelected = _selectedExpression == expression;
-                          return ExpressionBubbleWidget(
-                            expression: expression,
-                            isSelected: isSelected,
-                            onTap: () => _handleExpressionTap(expression),
+                      padding: const EdgeInsets.fromLTRB(18, 6, 18, 120),
+                      child: GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          mainAxisSpacing: 10,
+                          crossAxisSpacing: 10,
+                          childAspectRatio: 0.95,
+                        ),
+                        itemCount: kPeekieCustomizeEmotions.length,
+                        itemBuilder: (context, index) {
+                          final item = kPeekieCustomizeEmotions[index];
+                          final selected = index == _selectedIndex;
+                          return _EmotionTile(
+                            label: item.label,
+                            assetPath: item.assetPath,
+                            selected: selected,
+                            onTap: () => _handleExpressionTap(item),
                           );
-                        }).toList(),
+                        },
                       ),
                     ),
                   ),
@@ -81,6 +104,100 @@ class _ExpressionControllerScreenState
               ),
               // Floating bottom navigation bar
               const CustomBottomNavBar(currentRoute: '/expression'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EmotionTile extends StatelessWidget {
+  const _EmotionTile({
+    required this.label,
+    required this.assetPath,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final String assetPath;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final border = selected ? DesignTokens.babyBlue7 : Colors.transparent;
+    final bg = selected ? const Color(0xFFEAF4FF) : Colors.white;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: border, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: DesignTokens.neutral12.withOpacity(0.06),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Center(
+                        child: Image.asset(
+                          assetPath,
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
+                          gaplessPlayback: true,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      label,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: t.labelMedium?.copyWith(
+                        fontWeight: selected ? FontWeight.w800 : FontWeight.w700,
+                        color: DesignTokens.neutral12,
+                        height: 1.1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (selected)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    width: 18,
+                    height: 18,
+                    decoration: const BoxDecoration(
+                      color: DesignTokens.babyBlue7,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      size: 12,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

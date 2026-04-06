@@ -6,6 +6,7 @@ import '../theme/design_tokens.dart';
 import '../theme/peekie_gradients.dart';
 import '../theme/peekie_icon_assets.dart';
 import '../providers/camera_provider.dart';
+import '../services/mqtt_service.dart';
 import '../providers/music_player_provider.dart';
 import '../models/song.dart';
 import 'peekie_asset_icon.dart';
@@ -820,7 +821,7 @@ class ExpressionPeekieCard extends StatelessWidget {
         ? DesignTokens.neutral1
         : Colors.white.withOpacity(0.72);
     const fg = DesignTokens.neutral12;
-    final glyph = PeekieAssetIcon(assetPath, size: 26);
+    final glyph = PeekieAssetIcon(assetPath, size: 26, color: fg);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -831,12 +832,6 @@ class ExpressionPeekieCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: bg,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: selected
-                  ? DesignTokens.neutral8.withOpacity(0.35)
-                  : DesignTokens.neutral8.withOpacity(0.22),
-              width: 1,
-            ),
           ),
           child: Column(
             children: [
@@ -1270,5 +1265,8 @@ Future<void> notifyExpressionIfEnabled(
   if (!context.mounted) return;
   try {
     await context.read<CameraProvider>().notifyHardware(channel);
-  } catch (_) {}
+    await MqttService.instance.publishEmotionVideo(channel);
+  } catch (e) {
+    debugPrint('[Emotion] mqtt error: $e');
+  }
 }
