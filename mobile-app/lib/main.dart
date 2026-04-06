@@ -27,14 +27,7 @@ class BabyCareSmartCamApp extends StatelessWidget {
       child: MaterialApp(
         title: 'BabyCare SmartCam',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: AppTheme.primaryBlue,
-            brightness: Brightness.light,
-          ),
-          fontFamily: 'Roboto',
-        ),
+        theme: AppTheme.lightTheme(),
         initialRoute: '/',
         routes: {
           '/': (context) => const DashboardScreen(),

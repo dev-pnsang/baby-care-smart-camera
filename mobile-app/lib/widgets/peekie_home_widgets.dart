@@ -1,0 +1,983 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../theme/design_tokens.dart';
+import '../theme/peekie_gradients.dart';
+import '../theme/peekie_icon_assets.dart';
+import '../providers/camera_provider.dart';
+import 'peekie_asset_icon.dart';
+
+class PeekieTopBar extends StatelessWidget {
+  final String babyName;
+  final VoidCallback? onBack;
+  final VoidCallback onSettings;
+  final VoidCallback? onShare;
+
+  const PeekieTopBar({
+    super.key,
+    this.babyName = 'Bi',
+    this.onBack,
+    required this.onSettings,
+    this.onShare,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 4, 8, 12),
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: onBack ?? () => Navigator.maybePop(context),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            color: DesignTokens.neutral12,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+          ),
+          Expanded(
+            child: Center(
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: DesignTokens.neutral12,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      babyName,
+                      style: text.titleLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    const Icon(Icons.keyboard_arrow_down_rounded,
+                        color: Colors.white, size: 22),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: onShare ??
+                () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Chia sẻ — sắp có')),
+                  );
+                },
+            icon: const Icon(Icons.ios_share_rounded),
+            color: DesignTokens.neutral12,
+          ),
+          IconButton(
+            onPressed: onSettings,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+            icon: PeekieAssetIcon(
+              PeekieIconAssets.customize,
+              size: 24,
+              color: DesignTokens.neutral12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class StreamHudOverlay extends StatelessWidget {
+  final bool showLive;
+
+  const StreamHudOverlay({super.key, this.showLive = true});
+
+  String _timeStr() {
+    final n = DateTime.now();
+    return '${n.hour.toString().padLeft(2, '0')}:'
+        '${n.minute.toString().padLeft(2, '0')}:'
+        '${n.second.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        if (showLive)
+          Positioned(
+            top: 12,
+            left: 12,
+            child: Row(
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.black45,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: DesignTokens.error6,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'LIVE',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
+                            ),
+                      ),
+                      const SizedBox(width: 10),
+                      Icon(Icons.signal_cellular_alt_rounded,
+                          color: Colors.white.withOpacity(0.9), size: 16),
+                      const SizedBox(width: 8),
+                      Icon(Icons.battery_full_rounded,
+                          color: Colors.white.withOpacity(0.9), size: 18),
+                      const SizedBox(width: 4),
+                      Text(
+                        '100%',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        Positioned(
+          top: 12,
+          right: 12,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.black45,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.wb_sunny_rounded,
+                    color: Colors.amber.shade200, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  _timeStr(),
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class NavyCameraToolbar extends StatelessWidget {
+  final bool isMuted;
+  final VoidCallback onToggleMute;
+  final VoidCallback? onFullscreen;
+
+  const NavyCameraToolbar({
+    super.key,
+    required this.isMuted,
+    required this.onToggleMute,
+    this.onFullscreen,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    Widget assetBtn(String asset, VoidCallback? onTap) {
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: PeekieAssetIcon(asset, size: 24, color: Colors.white),
+          ),
+        ),
+      );
+    }
+
+    void stub(String msg) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    }
+
+    final volumeAsset =
+        isMuted ? PeekieIconAssets.volumeMedium : PeekieIconAssets.volumeHigh;
+
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: DesignTokens.neutral12,
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          assetBtn(PeekieIconAssets.record, () => stub('Ghi hình — sắp có')),
+          assetBtn(PeekieIconAssets.camera, () => stub('Chụp ảnh — sắp có')),
+          assetBtn(
+              PeekieIconAssets.microphone, () => stub('Đàm thoại — sắp có')),
+          assetBtn(volumeAsset, onToggleMute),
+          assetBtn(
+            PeekieIconAssets.pictureInPicture,
+            onFullscreen ?? () => stub('PiP — sắp có'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class EnvStatCard extends StatelessWidget {
+  final Widget leading;
+  final String label;
+  final String value;
+  final String footer;
+  final String statusLabel;
+  final Color statusBg;
+  final Color statusFg;
+
+  const EnvStatCard({
+    super.key,
+    required this.leading,
+    required this.label,
+    required this.value,
+    required this.footer,
+    required this.statusLabel,
+    required this.statusBg,
+    required this.statusFg,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE8F4FF),
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: [
+            BoxShadow(
+              color: DesignTokens.neutral12.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(width: 24, height: 24, child: leading),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: t.titleSmall?.copyWith(
+                      color: DesignTokens.neutral12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusBg,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    statusLabel,
+                    style: t.labelSmall?.copyWith(
+                      color: statusFg,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              value,
+              style: t.headlineLarge?.copyWith(
+                color: DesignTokens.neutral12,
+                fontWeight: FontWeight.w800,
+                fontSize: 26,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              footer,
+              style: t.bodySmall?.copyWith(
+                color: DesignTokens.neutral9,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class MiniMusicCard extends StatelessWidget {
+  final VoidCallback onOpenLibrary;
+  final double progress;
+
+  const MiniMusicCard({
+    super.key,
+    required this.onOpenLibrary,
+    this.progress = 0.45,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onOpenLibrary,
+        borderRadius: BorderRadius.circular(24),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: DesignTokens.neutral12.withOpacity(0.06),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: PeekieGradients.musicNenHomeCard,
+                    ),
+                  ),
+                ),
+                Positioned.fill(
+                  child: Opacity(
+                    opacity: 0.48,
+                    child: Image.asset(
+                      PeekieImageAssets.backgroundNhacNen,
+                      fit: BoxFit.cover,
+                      alignment: Alignment.center,
+                      filterQuality: FilterQuality.medium,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          PeekieAssetIcon(
+                            PeekieIconAssets.musicNote,
+                            size: 22,
+                            color: DesignTokens.neutral12,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Nhạc nền',
+                            style: t.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: DesignTokens.neutral12,
+                            ),
+                          ),
+                          const Spacer(),
+                          Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              PeekieAssetIcon(
+                                PeekieIconAssets.playlist,
+                                size: 28,
+                                color: DesignTokens.neutral12,
+                              ),
+                              Positioned(
+                                right: -2,
+                                top: -2,
+                                child: Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: const BoxDecoration(
+                                    color: DesignTokens.error6,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          Container(
+                            width: 52,
+                            height: 52,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      DesignTokens.neutral12.withOpacity(0.08),
+                                  blurRadius: 6,
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(14),
+                              child: Image.asset(
+                                PeekieImageAssets.muaRoiTiTach,
+                                width: 52,
+                                height: 52,
+                                fit: BoxFit.cover,
+                                gaplessPlayback: true,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Mưa rơi tí tách',
+                                  style: t.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    color: DesignTokens.neutral12,
+                                  ),
+                                ),
+                                Text(
+                                  'Tiếng ồn trắng',
+                                  style: t.bodySmall?.copyWith(
+                                    color: DesignTokens.neutral10,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 6,
+                          backgroundColor: DesignTokens.babyBlue3,
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                            DesignTokens.neutral12,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          // PNG gốc (không ColorFilter) — tránh icon biến mất trên nền gradient
+                          PeekieAssetIcon(
+                            PeekieMusicNenIcons.playSkipBackCircle,
+                            size: 32,
+                          ),
+                          PeekieAssetIcon(
+                            PeekieMusicNenIcons.pause,
+                            size: 48,
+                          ),
+                          PeekieAssetIcon(
+                            PeekieMusicNenIcons.playSkipForwardCircle,
+                            size: 32,
+                          ),
+                          PeekieAssetIcon(
+                            PeekieMusicNenIcons.volumeHigh,
+                            size: 28,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+enum PeekieQuickExpression { auto, happy, relax, custom }
+
+class ExpressionPeekieCard extends StatelessWidget {
+  final bool enabled;
+  final ValueChanged<bool> onEnabledChanged;
+  final PeekieQuickExpression selectedQuick;
+  final VoidCallback onPickAuto;
+  final VoidCallback onPickHappy;
+  final VoidCallback onPickRelax;
+  final VoidCallback onCustomize;
+
+  const ExpressionPeekieCard({
+    super.key,
+    required this.enabled,
+    required this.onEnabledChanged,
+    this.selectedQuick = PeekieQuickExpression.auto,
+    required this.onPickAuto,
+    required this.onPickHappy,
+    required this.onPickRelax,
+    required this.onCustomize,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF6D3),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: DesignTokens.sunlight6.withOpacity(0.38),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: DesignTokens.neutral12.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const PeekieAssetIcon(PeekieIconAssets.happy, size: 26),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Màn hình biểu cảm Peekie',
+                  style: t.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: DesignTokens.neutral12,
+                  ),
+                ),
+              ),
+              Switch.adaptive(
+                value: enabled,
+                onChanged: onEnabledChanged,
+                activeColor: DesignTokens.babyBlue7,
+                activeTrackColor: DesignTokens.babyBlue3,
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                  child: _exprChip(
+                      context, 'Tự động', PeekieIconAssets.autoMode, onPickAuto,
+                      selected: selectedQuick == PeekieQuickExpression.auto)),
+              const SizedBox(width: 8),
+              Expanded(
+                  child: _exprChip(context, 'Vui mừng',
+                      PeekieIconAssets.happyAlt, onPickHappy,
+                      selected: selectedQuick == PeekieQuickExpression.happy)),
+              const SizedBox(width: 8),
+              Expanded(
+                  child: _exprChip(context, 'Thư giãn',
+                      PeekieIconAssets.relieved, onPickRelax,
+                      selected: selectedQuick == PeekieQuickExpression.relax)),
+              const SizedBox(width: 8),
+              Expanded(
+                  child: _exprChip(context, 'Tuỳ chỉnh',
+                      PeekieIconAssets.customize, onCustomize,
+                      selected: selectedQuick == PeekieQuickExpression.custom)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _exprChip(
+    BuildContext context,
+    String label,
+    String assetPath,
+    VoidCallback onTap, {
+    bool selected = false,
+  }) {
+    final bg = selected
+        ? DesignTokens.neutral1
+        : Colors.white.withOpacity(0.72);
+    const fg = DesignTokens.neutral12;
+    final glyph = PeekieAssetIcon(assetPath, size: 26);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: selected
+                  ? DesignTokens.neutral8.withOpacity(0.35)
+                  : DesignTokens.neutral8.withOpacity(0.22),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            children: [
+              glyph,
+              const SizedBox(height: 6),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: fg,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 10,
+                      height: 1.1,
+                    ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SoothingModeBar extends StatelessWidget {
+  final bool enabled;
+  final ValueChanged<bool> onChanged;
+
+  const SoothingModeBar({
+    super.key,
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE3F2FD),
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Row(
+        children: [
+          PeekieAssetIcon(PeekieIconAssets.cloud, size: 26),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Row(
+              children: [
+                Flexible(
+                  child: Text(
+                    'Chế độ Dỗ dành',
+                    style: t.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: DesignTokens.neutral12,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Icon(Icons.help_outline_rounded,
+                    size: 18, color: DesignTokens.neutral10),
+              ],
+            ),
+          ),
+          Switch.adaptive(
+            value: enabled,
+            onChanged: onChanged,
+            activeColor: DesignTokens.neutral12,
+            activeTrackColor: DesignTokens.babyBlue5,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CompactSoundMeter extends StatelessWidget {
+  final double soundLevel;
+
+  const CompactSoundMeter({super.key, required this.soundLevel});
+
+  @override
+  Widget build(BuildContext context) {
+    final pct = (soundLevel / 100).clamp(0.0, 1.0);
+    final color = soundLevel > 70
+        ? DesignTokens.error6
+        : soundLevel > 55
+            ? DesignTokens.warning6
+            : DesignTokens.success6;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: DesignTokens.neutral12.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.graphic_eq_rounded, color: DesignTokens.neutral11),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Mức âm thanh',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: DesignTokens.neutral12,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                    value: pct,
+                    minHeight: 10,
+                    backgroundColor: DesignTokens.neutral5,
+                    valueColor: AlwaysStoppedAnimation<Color>(color),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            '${soundLevel.toInt()}',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: DesignTokens.neutral12,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+Future<void> showPeekieCryDialog(
+  BuildContext context, {
+  required String babyName,
+  required VoidCallback onSoothing,
+  required VoidCallback onDismiss,
+}) {
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: true,
+    builder: (ctx) {
+      final t = Theme.of(ctx).textTheme;
+      return Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: DesignTokens.sunlight6.withOpacity(0.35),
+                  shape: BoxShape.circle,
+                ),
+                child: const Text('😢', style: TextStyle(fontSize: 36)),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Bé $babyName đang khóc',
+                textAlign: TextAlign.center,
+                style: t.headlineLarge?.copyWith(color: DesignTokens.neutral12),
+              ),
+              const SizedBox(height: 12),
+              Text.rich(
+                TextSpan(
+                  style: t.bodyMedium?.copyWith(color: DesignTokens.neutral11),
+                  children: const [
+                    TextSpan(text: 'Bạn có muốn bật chế độ '),
+                    TextSpan(
+                      text: 'Dỗ dành',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    TextSpan(
+                        text:
+                            '? Peekie sẽ phát nhạc và bật màn hình biểu cảm '),
+                    TextSpan(
+                      text: 'Dỗ dành',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    TextSpan(text: ' bé yêu.'),
+                  ],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    onSoothing();
+                  },
+                  icon: const Icon(Icons.cloud_rounded, color: Colors.white),
+                  label: const Text('Bật chế độ Dỗ dành'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: DesignTokens.neutral12,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    onDismiss();
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: DesignTokens.neutral12,
+                    side: const BorderSide(color: DesignTokens.babyBlue5),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Text('Không, cảm ơn'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+Future<void> showPeekieNoiseDialog(
+  BuildContext context, {
+  required VoidCallback onAck,
+}) {
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: true,
+    builder: (ctx) {
+      final t = Theme.of(ctx).textTheme;
+      return Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFE4EC),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.warning_amber_rounded,
+                    color: DesignTokens.neutral12, size: 36),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Môi trường quá ồn ào',
+                textAlign: TextAlign.center,
+                style: t.headlineLarge?.copyWith(color: DesignTokens.neutral12),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Âm thanh xung quanh có thể làm bé khó ngủ. Hãy thử giảm âm lượng, đóng cửa phòng để cải thiện không gian cho bé.',
+                textAlign: TextAlign.center,
+                style: t.bodyMedium?.copyWith(color: DesignTokens.neutral11),
+              ),
+              const SizedBox(height: 20),
+              const Text('☁️', style: TextStyle(fontSize: 48)),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    onAck();
+                  },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: DesignTokens.neutral12,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Text('Tôi đã kiểm tra, cảm ơn'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+/// Sets hardware notify for expression when user picks a quick mood (best-effort).
+Future<void> notifyExpressionIfEnabled(
+  BuildContext context,
+  String channel,
+) async {
+  if (!context.mounted) return;
+  try {
+    await context.read<CameraProvider>().notifyHardware(channel);
+  } catch (_) {}
+}

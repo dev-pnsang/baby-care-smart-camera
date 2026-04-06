@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import '../theme/app_theme.dart';
+import '../theme/design_tokens.dart';
 
 class SoundLevelMeter extends StatelessWidget {
   final double soundLevel; // dB value
@@ -26,7 +27,7 @@ class SoundLevelMeter extends StatelessWidget {
       width: 200,
       height: 200,
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: DesignTokens.neutral1,
         shape: BoxShape.circle,
         boxShadow: AppTheme.neumorphicShadow,
       ),
@@ -41,7 +42,7 @@ class SoundLevelMeter extends StatelessWidget {
               'Sound Level:',
               style: TextStyle(
                 fontSize: 14,
-                color: AppTheme.textLight,
+                color: DesignTokens.neutral10,
               ),
             ),
             const SizedBox(height: 4),
@@ -50,14 +51,14 @@ class SoundLevelMeter extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textDark,
+                color: DesignTokens.neutral12,
               ),
             ),
             const SizedBox(height: 8),
             Icon(
               Icons.mic,
               size: 32,
-              color: AppTheme.primaryBlue,
+              color: DesignTokens.babyBlue7,
             ),
           ],
         ),

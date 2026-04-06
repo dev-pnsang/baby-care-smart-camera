@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
+import '../theme/design_tokens.dart';
 import '../models/camera_settings.dart';
 import '../providers/camera_settings_provider.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
@@ -71,7 +72,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Đã lưu cấu hình camera'),
-            backgroundColor: AppTheme.primaryBlue,
+            backgroundColor: DesignTokens.success6,
           ),
         );
       }
@@ -97,11 +98,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       padding: const EdgeInsets.only(top: 20, bottom: 10),
                       child: Text(
                         'Cài đặt Camera',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textDark,
-                        ),
+                        style: Theme.of(context).textTheme.headlineMedium,
                       ),
                     ),
                   ),
@@ -206,7 +203,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ElevatedButton(
                               onPressed: _saving ? null : _save,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.primaryBlue,
+                                backgroundColor: DesignTokens.neutral12,
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(
                                     vertical: 16),
@@ -225,7 +222,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     )
                                   : const Text('Lưu cấu hình'),
                             ),
-                            const SizedBox(height: 120),
+                            SizedBox(
+                                height: kPeekieShowBottomNavBar ? 120 : 24),
                           ],
                         ),
                       ),

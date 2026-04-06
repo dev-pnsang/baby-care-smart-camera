@@ -15,6 +15,10 @@ dependencies:
   google_fonts: ^6.1.0
   flutter_vlc_player: ^7.4.2
   shared_preferences: ^2.2.2
+  ffmpeg_kit_flutter_new_min_gpl: ^2.1.1
+  path_provider: ^2.1.5
+  tflite_flutter: ^0.10.4
+  fftea: ^1.5.0
 
 dev_dependencies:
   flutter_test:
@@ -23,4 +27,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/models/
+    - assets/icons/
+    - assets/images/
+    - assets/audio/
 

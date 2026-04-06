@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../theme/app_theme.dart';
+import '../theme/design_tokens.dart';
 import '../models/expression_type.dart';
 import '../providers/camera_provider.dart';
 import '../widgets/expression_bubble_widget.dart';
@@ -35,7 +34,7 @@ class _ExpressionControllerScreenState
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
-          gradient: AppTheme.backgroundGradient,
+          color: DesignTokens.sunlight2,
         ),
         child: SafeArea(
           child: Stack(
@@ -50,12 +49,8 @@ class _ExpressionControllerScreenState
                       children: [
                         Center(
                           child: Text(
-                            'Điều khiển Biểu Cảm',
-                            style: GoogleFonts.quicksand(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textDark,
-                            ),
+                            'Tuỳ chỉnh nâng cao',
+                            style: Theme.of(context).textTheme.headlineMedium,
                           ),
                         ),
                       ],

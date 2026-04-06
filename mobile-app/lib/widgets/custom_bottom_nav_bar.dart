@@ -1,5 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../theme/design_tokens.dart';
+import '../theme/peekie_icon_assets.dart';
+import 'peekie_asset_icon.dart';
+
+/// Đặt `true` khi cần hiện lại thanh navbar dưới.
+const bool kPeekieShowBottomNavBar = false;
 
 class CustomBottomNavBar extends StatelessWidget {
   final int? currentIndex;
@@ -57,6 +63,9 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!kPeekieShowBottomNavBar) {
+      return const SizedBox.shrink();
+    }
     final screenWidth = MediaQuery.of(context).size.width;
     final horizontalMargin = 20.0;
     final barWidth = screenWidth - (horizontalMargin * 2);
@@ -86,10 +95,10 @@ class CustomBottomNavBar extends StatelessWidget {
             filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.7),
+                color: DesignTokens.neutral1.withOpacity(0.88),
                 borderRadius: BorderRadius.circular(35),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.5),
+                  color: DesignTokens.babyBlue3.withOpacity(0.6),
                   width: 1.5,
                 ),
               ),
@@ -98,31 +107,31 @@ class CustomBottomNavBar extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _NavItem(
-                      icon: Icons.home_rounded,
-                      label: 'Dashboard',
+                      assetPath: PeekieIconAssets.camera,
+                      label: 'Trang chủ',
                       isActive: activeIndex == 0,
                       onTap: () => _handleTap(0, context),
                     ),
                   ),
                   Expanded(
                     child: _NavItem(
-                      icon: Icons.face_retouching_natural_rounded,
-                      label: 'Expression',
+                      assetPath: PeekieIconAssets.happy,
+                      label: 'Biểu cảm',
                       isActive: activeIndex == 1,
                       onTap: () => _handleTap(1, context),
                     ),
                   ),
                   Expanded(
                     child: _NavItem(
-                      icon: Icons.music_note_rounded,
-                      label: 'Music',
+                      assetPath: PeekieIconAssets.musicNote,
+                      label: 'Nhạc nền',
                       isActive: activeIndex == 2,
                       onTap: () => _handleTap(2, context),
                     ),
                   ),
                   Expanded(
                     child: _NavItem(
-                      icon: Icons.settings_rounded,
+                      assetPath: PeekieIconAssets.customize,
                       label: 'Cài đặt',
                       isActive: activeIndex == 3,
                       onTap: () => _handleTap(3, context),
@@ -139,13 +148,13 @@ class CustomBottomNavBar extends StatelessWidget {
 }
 
 class _NavItem extends StatefulWidget {
-  final IconData icon;
+  final String assetPath;
   final String label;
   final bool isActive;
   final VoidCallback onTap;
 
   const _NavItem({
-    required this.icon,
+    required this.assetPath,
     required this.label,
     required this.isActive,
     required this.onTap,
@@ -158,10 +167,8 @@ class _NavItem extends StatefulWidget {
 class _NavItemState extends State<_NavItem> {
   @override
   Widget build(BuildContext context) {
-    // Active color: Soft Blue #A2D2FF
-    const activeColor = Color(0xFFA2D2FF);
-    // Inactive color: Muted Grey #B2BEC3
-    const inactiveColor = Color(0xFFB2BEC3);
+    const activeColor = DesignTokens.babyBlue7;
+    const inactiveColor = DesignTokens.neutral9;
 
     return GestureDetector(
       onTap: widget.onTap,
@@ -188,10 +195,10 @@ class _NavItemState extends State<_NavItem> {
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOut,
-                  child: Icon(
-                    widget.icon,
-                    color: widget.isActive ? activeColor : inactiveColor,
+                  child: PeekieAssetIcon(
+                    widget.assetPath,
                     size: 26,
+                    color: widget.isActive ? activeColor : inactiveColor,
                   ),
                 ),
                 if (widget.isActive)

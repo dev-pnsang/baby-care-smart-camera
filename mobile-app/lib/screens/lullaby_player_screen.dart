@@ -1,9 +1,12 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../theme/design_tokens.dart';
+import '../theme/peekie_icon_assets.dart';
 import '../models/song.dart';
 import '../widgets/neumorphic_button.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
+import '../widgets/peekie_asset_icon.dart';
 
 class LullabyPlayerScreen extends StatefulWidget {
   const LullabyPlayerScreen({super.key});
@@ -97,17 +100,124 @@ class _LullabyPlayerScreenState extends State<LullabyPlayerScreen> {
                           ),
                         ),
                         const SizedBox(width: 16),
-                        const Text(
-                          'Âm nhạc cho Bé',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.textDark,
+                        Text(
+                          'Nhạc nền',
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                DesignTokens.babyBlue3,
+                                DesignTokens.babyBlue2,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: DesignTokens.sunlight6,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  'Kho truyện',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w800,
+                                        color: DesignTokens.neutral12,
+                                      ),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                'Thế giới cổ tích cho bé',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall
+                                    ?.copyWith(color: DesignTokens.neutral12),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Tuyển chọn hay — đưa bé vào giấc mơ êm ái',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(color: DesignTokens.neutral10),
+                              ),
+                              const SizedBox(height: 12),
+                              FilledButton.tonal(
+                                onPressed: () {},
+                                child: const Text('Vào ngay'),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          decoration: InputDecoration(
+                            hintText: 'Tìm kiếm',
+                            prefixIcon: const Icon(Icons.search_rounded),
+                            filled: true,
+                            fillColor: DesignTokens.neutral3,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          height: 40,
+                          child: ListView(
+                            scrollDirection: Axis.horizontal,
+                            children: [
+                              _FilterChip(
+                                label: 'Tất cả',
+                                selected: true,
+                                onSelected: (_) {},
+                              ),
+                              const SizedBox(width: 8),
+                              _FilterChip(
+                                label: 'Tiếng ồn trắng',
+                                selected: false,
+                                onSelected: (_) {},
+                              ),
+                              const SizedBox(width: 8),
+                              _FilterChip(
+                                label: 'Hát ru',
+                                selected: false,
+                                onSelected: (_) {},
+                              ),
+                              const SizedBox(width: 8),
+                              _FilterChip(
+                                label: 'Truyện cổ',
+                                selected: false,
+                                onSelected: (_) {},
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
+                  const SizedBox(height: 12),
 
                   // Song Cards List
                   Expanded(
@@ -272,10 +382,10 @@ class _LullabyPlayerScreenState extends State<LullabyPlayerScreen> {
                                           onPressed: () {
                                             // Previous song
                                           },
-                                          child: Icon(
-                                            Icons.skip_previous,
+                                          child: PeekieAssetIcon(
+                                            PeekieMusicNenIcons.playSkipBackCircle,
+                                            size: isSmallScreen ? 24 : 28,
                                             color: AppTheme.textDark,
-                                            size: isSmallScreen ? 20 : 24,
                                           ),
                                         ),
                                         SizedBox(width: spacing),
@@ -288,13 +398,17 @@ class _LullabyPlayerScreenState extends State<LullabyPlayerScreen> {
                                               _isPlaying = !_isPlaying;
                                             });
                                           },
-                                          child: Icon(
-                                            _isPlaying
-                                                ? Icons.pause
-                                                : Icons.play_arrow,
-                                            color: AppTheme.primaryBlue,
-                                            size: isSmallScreen ? 28 : 32,
-                                          ),
+                                          child: _isPlaying
+                                              ? PeekieAssetIcon(
+                                                  PeekieMusicNenIcons.pause,
+                                                  size: isSmallScreen ? 30 : 34,
+                                                )
+                                              : Icon(
+                                                  // Chưa có play.png trong bộ nhạc nền
+                                                  Icons.play_arrow_rounded,
+                                                  color: AppTheme.primaryBlue,
+                                                  size: isSmallScreen ? 28 : 32,
+                                                ),
                                         ),
                                         SizedBox(width: spacing),
                                         NeumorphicButton(
@@ -303,10 +417,10 @@ class _LullabyPlayerScreenState extends State<LullabyPlayerScreen> {
                                           onPressed: () {
                                             // Next song
                                           },
-                                          child: Icon(
-                                            Icons.skip_next,
+                                          child: PeekieAssetIcon(
+                                            PeekieMusicNenIcons.playSkipForwardCircle,
+                                            size: isSmallScreen ? 24 : 28,
                                             color: AppTheme.textDark,
-                                            size: isSmallScreen ? 20 : 24,
                                           ),
                                         ),
                                         SizedBox(width: spacing),
@@ -331,10 +445,10 @@ class _LullabyPlayerScreenState extends State<LullabyPlayerScreen> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(
-                                      Icons.volume_up,
+                                    PeekieAssetIcon(
+                                      PeekieMusicNenIcons.volumeHigh,
+                                      size: 22,
                                       color: AppTheme.textLight,
-                                      size: 20,
                                     ),
                                     const SizedBox(width: 8),
                                     Expanded(
@@ -372,6 +486,36 @@ class _LullabyPlayerScreenState extends State<LullabyPlayerScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final ValueChanged<bool> onSelected;
+
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FilterChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: onSelected,
+      showCheckmark: false,
+      selectedColor: DesignTokens.neutral12,
+      labelStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
+            color: selected ? Colors.white : DesignTokens.neutral12,
+            fontWeight: FontWeight.w700,
+          ),
+      backgroundColor: DesignTokens.neutral4,
+      side: BorderSide.none,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     );
   }
 }
@@ -449,10 +593,16 @@ class _SongCard extends StatelessWidget {
                     width: 45,
                     height: 45,
                     onPressed: onTap,
-                    child: Icon(
-                      isCurrent ? Icons.pause : Icons.play_arrow,
-                      color: AppTheme.primaryBlue,
-                    ),
+                    child: isCurrent
+                        ? PeekieAssetIcon(
+                            PeekieMusicNenIcons.pause,
+                            size: 26,
+                          )
+                        : Icon(
+                            Icons.play_arrow_rounded,
+                            color: AppTheme.primaryBlue,
+                            size: 28,
+                          ),
                   ),
           ],
         ),

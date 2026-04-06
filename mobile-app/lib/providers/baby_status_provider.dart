@@ -9,7 +9,6 @@ class BabyStatusProvider extends ChangeNotifier {
   
   void updateSoundLevel(double db) {
     _soundLevel = db;
-    _isCrying = db > 70.0;
     notifyListeners();
   }
   
