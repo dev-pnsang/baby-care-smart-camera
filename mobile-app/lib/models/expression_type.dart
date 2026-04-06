@@ -41,5 +41,23 @@ extension ExpressionTypeExtension on ExpressionType {
         return 'Bình tĩnh';
     }
   }
+
+  /// English id for hardware / `notifyHardware` (distinct from [name] labels).
+  String get hardwareChannel {
+    switch (this) {
+      case ExpressionType.happy:
+        return 'happy';
+      case ExpressionType.sad:
+        return 'sad';
+      case ExpressionType.surprised:
+        return 'surprised';
+      case ExpressionType.sleepy:
+        return 'sleepy';
+      case ExpressionType.playful:
+        return 'playful';
+      case ExpressionType.calm:
+        return 'calm';
+    }
+  }
 }
 

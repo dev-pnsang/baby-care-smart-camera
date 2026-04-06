@@ -31,5 +31,6 @@ flutter:
     - assets/models/
     - assets/icons/
     - assets/images/
+    - assets/emotion/
     - assets/audio/
 

@@ -12,6 +12,7 @@ import '../services/noise_detector_service.dart';
 import '../theme/peekie_icon_assets.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/peekie_asset_icon.dart';
+import '../widgets/peekie_expression_customize_sheet.dart';
 import '../widgets/peekie_home_widgets.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -463,7 +464,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             onCustomize: () {
                               setState(() => _quickExpression =
                                   PeekieQuickExpression.custom);
-                              Navigator.pushNamed(context, '/expression');
+                              showPeekieExpressionCustomizeSheet(context);
                             },
                           ),
                           SoothingModeBar(

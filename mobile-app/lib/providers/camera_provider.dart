@@ -15,13 +15,41 @@ class CameraProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  static ExpressionType _typeForChannel(String raw) {
+    final id = raw.toLowerCase().trim();
+    switch (id) {
+      case 'happy':
+      case 'vui_mung':
+        return ExpressionType.happy;
+      case 'sad':
+        return ExpressionType.sad;
+      case 'surprised':
+      case 'to_mo':
+      case 'nong_nuc':
+        return ExpressionType.surprised;
+      case 'sleepy':
+      case 'buon_ngu':
+        return ExpressionType.sleepy;
+      case 'playful':
+      case 'ham_mo':
+        return ExpressionType.playful;
+      case 'calm':
+      case 'auto':
+      case 'tu_dong':
+      case 'thu_gian':
+        return ExpressionType.calm;
+      case 'lanh_leo':
+        return ExpressionType.sad;
+      case 'lo_so':
+        return ExpressionType.sad;
+      default:
+        return ExpressionType.happy;
+    }
+  }
+
   /// Updates the expression on the camera's 2.8-inch screen and plays corresponding sound
   Future<void> notifyHardware(String expressionID) async {
-    // Find the expression type from ID
-    final expression = ExpressionType.values.firstWhere(
-      (e) => e.name.toLowerCase() == expressionID.toLowerCase(),
-      orElse: () => ExpressionType.happy,
-    );
+    final expression = _typeForChannel(expressionID);
 
     _currentExpression = expression;
     notifyListeners();

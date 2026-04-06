@@ -26,7 +26,7 @@ class _ExpressionControllerScreenState
     final cameraProvider = Provider.of<CameraProvider>(context, listen: false);
     
     // Notify hardware with expression ID and trigger sound effect
-    await cameraProvider.notifyHardware(type.name);
+    await cameraProvider.notifyHardware(type.hardwareChannel);
   }
 
   @override
