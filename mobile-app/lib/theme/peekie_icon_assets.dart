@@ -31,6 +31,7 @@ abstract final class PeekieIconAssets {
   static const String pause = PeekieMusicNenIcons.pause;
 
   static const String cloud = '$_root/cloud.png';
+  static const String cloudSharp = '$_root/cloud-sharp.png';
   static const String temperature = '$_root/temperature.png';
   /// Water droplet (file name `Vector.png`).
   static const String humidity = '$_root/Vector.png';
@@ -44,6 +45,10 @@ abstract final class PeekieIconAssets {
   static const String settingsToolbar = '$_root/Huge-icon.png';
   static const String share01 = '$_root/share-01.png';
   static const String elements = '$_root/elements.png';
+
+  // Alerts
+  static const String triangleDanger = '$_root/triangle-danger.png';
+  static const String moodCry = '$_root/mood-cry.png';
 }
 
 /// Ảnh minh họa / cover trong app.
@@ -57,4 +62,8 @@ abstract final class PeekieImageAssets {
   static const String thanhGiong = 'assets/images/thanh_giong.png';
   static const String truyenCoBeLoLem =
       'assets/images/truyen_co_be_lo_lem.png';
+
+  // Peekie emotions (3D renders)
+  static const String peekieGianDu = 'assets/images/peekie_gian_du.png';
+  static const String peekieKhoc = 'assets/images/peekie_khoc.png';
 }

@@ -493,6 +493,55 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             onChanged: (v) =>
                                 setState(() => _soothingMode = v),
                           ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: FilledButton(
+                                  onPressed: () {
+                                    showPeekieNoiseDialog(
+                                      context,
+                                      onAck: () {},
+                                    );
+                                  },
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: DesignTokens.neutral12,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 14),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                  ),
+                                  child: const Text('Test thông báo ồn'),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: FilledButton(
+                                  onPressed: () {
+                                    showPeekieCryDialog(
+                                      context,
+                                      babyName: 'Bi',
+                                      onSoothing: () {},
+                                      onDismiss: () {},
+                                    );
+                                  },
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: const Color(0xFFCCE6FF),
+                                    foregroundColor: DesignTokens.neutral12,
+                                    elevation: 0,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 14),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                  ),
+                                  child: const Text('Test thông báo khóc'),
+                                ),
+                              ),
+                            ],
+                          ),
                           SizedBox(
                               height: kPeekieShowBottomNavBar ? 120 : 24),
                         ],

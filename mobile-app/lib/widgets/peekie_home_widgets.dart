@@ -995,89 +995,155 @@ Future<void> showPeekieCryDialog(
     builder: (ctx) {
       final t = Theme.of(ctx).textTheme;
       return Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Stack(
+          alignment: Alignment.topCenter,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 30),
+              child: Container(
+                width: double.infinity,
                 decoration: BoxDecoration(
-                  color: DesignTokens.sunlight6.withOpacity(0.35),
-                  shape: BoxShape.circle,
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(28),
                 ),
-                child: const Text('😢', style: TextStyle(fontSize: 36)),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Bé $babyName đang khóc',
-                textAlign: TextAlign.center,
-                style: t.headlineLarge?.copyWith(color: DesignTokens.neutral12),
-              ),
-              const SizedBox(height: 12),
-              Text.rich(
-                TextSpan(
-                  style: t.bodyMedium?.copyWith(color: DesignTokens.neutral11),
-                  children: const [
-                    TextSpan(text: 'Bạn có muốn bật chế độ '),
-                    TextSpan(
-                      text: 'Dỗ dành',
-                      style: TextStyle(fontWeight: FontWeight.w800),
-                    ),
-                    TextSpan(
-                        text:
-                            '? Peekie sẽ phát nhạc và bật màn hình biểu cảm '),
-                    TextSpan(
-                      text: 'Dỗ dành',
-                      style: TextStyle(fontWeight: FontWeight.w800),
-                    ),
-                    TextSpan(text: ' bé yêu.'),
-                  ],
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    onSoothing();
-                  },
-                  icon: const Icon(Icons.cloud_rounded, color: Colors.white),
-                  label: const Text('Bật chế độ Dỗ dành'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: DesignTokens.neutral12,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 44, 24, 20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Bé $babyName đang khóc',
+                        textAlign: TextAlign.center,
+                        style: t.headlineLarge?.copyWith(
+                          color: DesignTokens.neutral12,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 24,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text.rich(
+                        TextSpan(
+                          style: t.bodyMedium?.copyWith(
+                            color: DesignTokens.neutral11,
+                            height: 1.35,
+                            fontSize: 16,
+                          ),
+                          children: const [
+                            TextSpan(text: 'Bạn có muốn bật chế độ '),
+                            TextSpan(
+                              text: 'Dỗ dành',
+                              style: TextStyle(fontWeight: FontWeight.w800),
+                            ),
+                            TextSpan(
+                              text:
+                                  '? Peekie sẽ phát nhạc và bật màn hình biểu cảm ',
+                            ),
+                            TextSpan(
+                              text: 'Dỗ dành',
+                              style: TextStyle(fontWeight: FontWeight.w800),
+                            ),
+                            TextSpan(text: ' bé yêu.'),
+                          ],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      Image.asset(
+                        PeekieImageAssets.peekieKhoc,
+                        height: 190,
+                        fit: BoxFit.contain,
+                        filterQuality: FilterQuality.high,
+                      ),
+                      const SizedBox(height: 18),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            onSoothing();
+                          },
+                          icon: PeekieAssetIcon(
+                            PeekieIconAssets.cloudSharp,
+                            size: 22,
+                            color: Colors.white,
+                          ),
+                          label: Text(
+                            'Bật chế độ Dỗ dành',
+                            style: t.titleMedium?.copyWith(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
+                          ),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: DesignTokens.neutral12,
+                            foregroundColor: Colors.white,
+                            textStyle: t.titleMedium?.copyWith(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            onDismiss();
+                          },
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFFCCE6FF),
+                            foregroundColor: DesignTokens.neutral12,
+                            textStyle: t.titleMedium?.copyWith(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                            ),
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Text(
+                            'Không, cảm ơn',
+                            style: t.titleMedium?.copyWith(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: DesignTokens.neutral12,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    onDismiss();
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: DesignTokens.neutral12,
-                    side: const BorderSide(color: DesignTokens.babyBlue5),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: const Text('Không, cảm ơn'),
+            ),
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9D99D),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 6),
+              ),
+              child: Center(
+                child: PeekieAssetIcon(
+                  PeekieIconAssets.moodCry,
+                  size: 28,
+                  color: DesignTokens.neutral12,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     },
@@ -1094,56 +1160,102 @@ Future<void> showPeekieNoiseDialog(
     builder: (ctx) {
       final t = Theme.of(ctx).textTheme;
       return Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFE4EC),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.warning_amber_rounded,
-                    color: DesignTokens.neutral12, size: 36),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Môi trường quá ồn ào',
-                textAlign: TextAlign.center,
-                style: t.headlineLarge?.copyWith(color: DesignTokens.neutral12),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Âm thanh xung quanh có thể làm bé khó ngủ. Hãy thử giảm âm lượng, đóng cửa phòng để cải thiện không gian cho bé.',
-                textAlign: TextAlign.center,
-                style: t.bodyMedium?.copyWith(color: DesignTokens.neutral11),
-              ),
-              const SizedBox(height: 20),
-              const Text('☁️', style: TextStyle(fontSize: 48)),
-              const SizedBox(height: 16),
-              SizedBox(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Stack(
+          alignment: Alignment.topCenter,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 30),
+              child: Container(
                 width: double.infinity,
-                child: FilledButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    onAck();
-                  },
-                  style: FilledButton.styleFrom(
-                    backgroundColor: DesignTokens.neutral12,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(28),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 44, 24, 20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Môi trường quá ồn ào',
+                        textAlign: TextAlign.center,
+                        style: t.headlineLarge?.copyWith(
+                          color: DesignTokens.neutral12,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 24,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Âm thanh xung quanh có thể làm bé khó ngủ. Hãy thử giảm âm lượng, đóng cửa phòng để cải thiện không gian cho bé.',
+                        textAlign: TextAlign.center,
+                        style: t.bodyMedium?.copyWith(
+                          color: DesignTokens.neutral11,
+                          height: 1.35,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Image.asset(
+                        PeekieImageAssets.peekieGianDu,
+                        height: 230,
+                        fit: BoxFit.contain,
+                        filterQuality: FilterQuality.high,
+                      ),
+                      const SizedBox(height: 18),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            onAck();
+                          },
+                          style: FilledButton.styleFrom(
+                            backgroundColor: DesignTokens.neutral12,
+                            foregroundColor: Colors.white,
+                            textStyle: t.titleMedium?.copyWith(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Text(
+                            'Tôi đã kiểm tra, cảm ơn',
+                            style: t.titleMedium?.copyWith(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  child: const Text('Tôi đã kiểm tra, cảm ơn'),
                 ),
               ),
-            ],
-          ),
+            ),
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF6C9CB),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 6),
+              ),
+              child: Center(
+                child: PeekieAssetIcon(
+                  PeekieIconAssets.triangleDanger,
+                  size: 28,
+                  color: DesignTokens.neutral12,
+                ),
+              ),
+            ),
+          ],
         ),
       );
     },
