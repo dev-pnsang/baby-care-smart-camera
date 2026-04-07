@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../providers/camera_provider.dart';
 import '../services/mqtt_service.dart';
+import '../theme/app_theme.dart';
 import '../theme/design_tokens.dart';
 
 class PeekieCustomizeEmotionItem {
@@ -206,18 +206,20 @@ class _PeekieCustomizeOverlayState extends State<_PeekieCustomizeOverlay> {
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     final bottomInset = MediaQuery.paddingOf(context).bottom;
-
-    final titleStyle = GoogleFonts.nunito(
+    final titleStyle = TextStyle(
+      fontFamily: AppTheme.fontFamily,
       fontSize: 16,
       fontWeight: FontWeight.w700,
       color: DesignTokens.neutral12,
     );
-    final sectionStyle = GoogleFonts.nunito(
+    final sectionStyle = TextStyle(
+      fontFamily: AppTheme.fontFamily,
       fontSize: 14,
       fontWeight: FontWeight.w700,
       color: DesignTokens.neutral12,
     );
-    final labelStyle = GoogleFonts.nunito(
+    final labelStyle = TextStyle(
+      fontFamily: AppTheme.fontFamily,
       fontSize: 11,
       fontWeight: FontWeight.w600,
       color: DesignTokens.neutral12,
@@ -311,7 +313,8 @@ class _PeekieCustomizeOverlayState extends State<_PeekieCustomizeOverlay> {
                           Text('Độ sáng', style: sectionStyle),
                           Text(
                             '${_brightnessPercent}%',
-                            style: GoogleFonts.nunito(
+                            style: TextStyle(
+                              fontFamily: AppTheme.fontFamily,
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: DesignTokens.neutral12,
@@ -386,9 +389,12 @@ class _PeekieCustomizeOverlayState extends State<_PeekieCustomizeOverlay> {
                                 final maxH = constraints.maxHeight;
                                 // Giữ chỗ cho 2 dòng nhãn; không dùng Expanded để tránh khoảng trống giữa các hàng.
                                 final iconH = math.min(
-                                  w * 0.82,
-                                  math.max(32.0, maxH - 22),
+                                  w * 0.9,
+                                  math.max(40.0, maxH - 18),
                                 );
+                                // Use a non-square frame so radius 42 doesn't look circular.
+                                final frameW = w * 0.92;
+                                final frameH = iconH * 0.95;
                                 return Column(
                                   mainAxisSize: MainAxisSize.min,
                                   mainAxisAlignment: MainAxisAlignment.start,
@@ -400,60 +406,96 @@ class _PeekieCustomizeOverlayState extends State<_PeekieCustomizeOverlay> {
                                       child: Stack(
                                         alignment: Alignment.center,
                                         children: [
-                                          AnimatedContainer(
-                                            duration:
-                                                const Duration(milliseconds: 150),
-                                            curve: Curves.easeOut,
-                                            margin: const EdgeInsets.symmetric(
-                                              horizontal: 4,
-                                              vertical: 2,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: selected
-                                                  ? const Color(0xFFEAF4FF)
-                                                  : Colors.transparent,
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                              border: Border.all(
-                                                color: selected
-                                                    ? DesignTokens.babyBlue7
-                                                    : Colors.transparent,
-                                                width: 2,
-                                              ),
-                                            ),
-                                            child: Center(
-                                              child: Image.asset(
-                                                item.assetPath,
-                                                fit: BoxFit.contain,
-                                                alignment:
-                                                    Alignment.bottomCenter,
-                                                errorBuilder:
-                                                    (_, __, ___) => Icon(
-                                                  Icons
-                                                      .sentiment_satisfied_alt,
-                                                  color: DesignTokens.neutral9,
-                                                ),
+                                          Center(
+                                            child: SizedBox(
+                                              width: frameW,
+                                              height: frameH,
+                                              child: Stack(
+                                                clipBehavior: Clip.none,
+                                                children: [
+                                                  AnimatedContainer(
+                                                    duration: const Duration(
+                                                      milliseconds: 150,
+                                                    ),
+                                                    curve: Curves.easeOut,
+                                                    decoration: BoxDecoration(
+                                                      color: selected
+                                                          ? const Color(
+                                                              0xFFEAF4FF,
+                                                            )
+                                                          : Colors.white,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                        14,
+                                                      ),
+                                                      border: Border.all(
+                                                        color: selected
+                                                            ? DesignTokens
+                                                                .babyBlue7
+                                                            : const Color(
+                                                                0xFF949EAC,
+                                                              ),
+                                                        width: selected ? 2 : 1,
+                                                      ),
+                                                    ),
+                                                    child: ClipRRect(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                        14,
+                                                      ),
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets.all(
+                                                          6,
+                                                        ),
+                                                        child: SizedBox.expand(
+                                                          child: Image.asset(
+                                                            item.assetPath,
+                                                            // Không crop mặt biểu cảm; tự co giãn trong khung.
+                                                            fit: BoxFit.contain,
+                                                            alignment: Alignment
+                                                                .center,
+                                                            filterQuality:
+                                                                FilterQuality
+                                                                    .high,
+                                                            errorBuilder:
+                                                                (_, __, ___) =>
+                                                                    Icon(
+                                                              Icons
+                                                                  .sentiment_satisfied_alt,
+                                                              color: DesignTokens
+                                                                  .neutral9,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  if (selected)
+                                                    Positioned(
+                                                      top: -2,
+                                                      right: -2,
+                                                      child: Container(
+                                                        width: 18,
+                                                        height: 18,
+                                                        decoration:
+                                                            const BoxDecoration(
+                                                          color: DesignTokens
+                                                              .babyBlue7,
+                                                          shape:
+                                                              BoxShape.circle,
+                                                        ),
+                                                        child: const Icon(
+                                                          Icons.check,
+                                                          size: 12,
+                                                          color: Colors.white,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                ],
                                               ),
                                             ),
                                           ),
-                                          if (selected)
-                                            Positioned(
-                                              top: 4,
-                                              right: 4,
-                                              child: Container(
-                                                width: 18,
-                                                height: 18,
-                                                decoration: const BoxDecoration(
-                                                  color: DesignTokens.babyBlue7,
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: const Icon(
-                                                  Icons.check,
-                                                  size: 12,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
                                         ],
                                       ),
                                     ),
