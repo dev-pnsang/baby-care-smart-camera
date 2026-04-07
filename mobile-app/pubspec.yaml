@@ -26,6 +26,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  image: ^4.5.4
 
 flutter:
   uses-material-design: true
@@ -35,4 +36,27 @@ flutter:
     - assets/images/
     - assets/emotion/
     - assets/audio/
+  fonts:
+    - family: SVN-GothamRounded
+      fonts:
+        - asset: assets/fonts/TTF/SVN-GothamRounded-Light.ttf
+          weight: 300
+        - asset: assets/fonts/TTF/SVN-GothamRounded-LightItalic.ttf
+          weight: 300
+          style: italic
+        - asset: assets/fonts/TTF/SVN-GothamRounded-Book.ttf
+          weight: 400
+        - asset: assets/fonts/TTF/SVN-GothamRounded-BookItalic.ttf
+          weight: 400
+          style: italic
+        - asset: assets/fonts/TTF/SVN-GothamRounded-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/TTF/SVN-GothamRounded-MediumItalic.ttf
+          weight: 500
+          style: italic
+        - asset: assets/fonts/TTF/SVN-GothamRounded-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/TTF/SVN-GothamRounded-BoldItalic.ttf
+          weight: 700
+          style: italic
 

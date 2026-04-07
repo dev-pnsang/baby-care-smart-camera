@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../models/expression_type.dart';
 import '../theme/app_theme.dart';
 
@@ -102,12 +101,12 @@ class _ExpressionBubbleWidgetState extends State<ExpressionBubbleWidget> {
           // Label Text
           Text(
             widget.expression.name,
-            style: GoogleFonts.quicksand(
+            style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: widget.isSelected
-                  ? AppTheme.primaryBlue
-                  : AppTheme.textDark,
+              color:
+                  widget.isSelected ? AppTheme.primaryBlue : AppTheme.textDark,
             ),
           ),
         ],

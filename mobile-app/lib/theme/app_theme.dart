@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'design_tokens.dart';
 
 class AppTheme {
   AppTheme._();
+
+  static const String fontFamily = 'SVN-GothamRounded';
 
   // Legacy aliases → design tokens
   static const Color primaryBlue = DesignTokens.babyBlue6;
@@ -47,76 +48,35 @@ class AppTheme {
   static Color get glassSurface =>
       DesignTokens.neutral1.withOpacity(0.92);
 
-  /// Typography: Gotham Rounded spec → Nunito (rounded, Google Fonts).
+  /// Typography: GothamRounded (assets/fonts).
   static TextTheme textTheme(ColorScheme colors) {
-    final base = GoogleFonts.nunitoTextTheme();
-    return base.copyWith(
-      displayLarge: GoogleFonts.nunito(
-        fontSize: 28,
-        fontWeight: FontWeight.w600,
-        height: 1.2,
-        color: colors.onSurface,
-      ),
-      displayMedium: GoogleFonts.nunito(
-        fontSize: 24,
-        fontWeight: FontWeight.w600,
-        height: 1.2,
-        color: colors.onSurface,
-      ),
-      headlineLarge: GoogleFonts.nunito(
-        fontSize: 24,
-        fontWeight: FontWeight.w700,
-        height: 1.2,
-        color: colors.onSurface,
-      ),
-      headlineMedium: GoogleFonts.nunito(
-        fontSize: 20,
-        fontWeight: FontWeight.w700,
-        height: 1.2,
-        color: colors.onSurface,
-      ),
-      headlineSmall: GoogleFonts.nunito(
-        fontSize: 16,
-        fontWeight: FontWeight.w700,
-        height: 1.2,
-        color: colors.onSurface,
-      ),
-      titleLarge: GoogleFonts.nunito(
-        fontSize: 16,
-        fontWeight: FontWeight.w500,
-        height: 1.2,
-        color: colors.onSurface,
-      ),
-      titleMedium: GoogleFonts.nunito(
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-        height: 1.2,
-        color: colors.onSurface,
-      ),
-      bodyLarge: GoogleFonts.nunito(
-        fontSize: 16,
-        fontWeight: FontWeight.w400,
-        height: 1.2,
-        color: colors.onSurface,
-      ),
-      bodyMedium: GoogleFonts.nunito(
-        fontSize: 14,
-        fontWeight: FontWeight.w400,
-        height: 1.2,
-        color: colors.onSurface,
-      ),
-      bodySmall: GoogleFonts.nunito(
-        fontSize: 12,
-        fontWeight: FontWeight.w400,
-        height: 1.2,
-        color: colors.onSurfaceVariant,
-      ),
-      labelLarge: GoogleFonts.nunito(
-        fontSize: 16,
-        fontWeight: FontWeight.w500,
-        height: 1.2,
-        color: colors.onSurface,
-      ),
+    TextStyle ts(
+      double size,
+      FontWeight weight,
+      Color color, {
+      double height = 1.2,
+    }) {
+      return TextStyle(
+        fontFamily: fontFamily,
+        fontSize: size,
+        fontWeight: weight,
+        height: height,
+        color: color,
+      );
+    }
+
+    return TextTheme(
+      displayLarge: ts(28, FontWeight.w600, colors.onSurface),
+      displayMedium: ts(24, FontWeight.w600, colors.onSurface),
+      headlineLarge: ts(24, FontWeight.w700, colors.onSurface),
+      headlineMedium: ts(20, FontWeight.w700, colors.onSurface),
+      headlineSmall: ts(16, FontWeight.w700, colors.onSurface),
+      titleLarge: ts(16, FontWeight.w500, colors.onSurface),
+      titleMedium: ts(14, FontWeight.w500, colors.onSurface),
+      bodyLarge: ts(16, FontWeight.w400, colors.onSurface),
+      bodyMedium: ts(14, FontWeight.w400, colors.onSurface),
+      bodySmall: ts(12, FontWeight.w400, colors.onSurfaceVariant),
+      labelLarge: ts(16, FontWeight.w500, colors.onSurface),
     );
   }
 
@@ -136,6 +96,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
+      fontFamily: fontFamily,
       textTheme: textTheme(colorScheme),
       scaffoldBackgroundColor: DesignTokens.babyBlue2,
       appBarTheme: AppBarTheme(
@@ -143,7 +104,8 @@ class AppTheme {
         scrolledUnderElevation: 0,
         backgroundColor: Colors.transparent,
         foregroundColor: DesignTokens.neutral12,
-        titleTextStyle: GoogleFonts.nunito(
+        titleTextStyle: TextStyle(
+          fontFamily: fontFamily,
           fontSize: 20,
           fontWeight: FontWeight.w700,
           color: DesignTokens.neutral12,
@@ -174,7 +136,8 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: GoogleFonts.nunito(
+          textStyle: const TextStyle(
+            fontFamily: fontFamily,
             fontSize: 16,
             fontWeight: FontWeight.w700,
             height: 1.2,
