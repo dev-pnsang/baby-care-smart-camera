@@ -342,6 +342,8 @@ class _PlayCircleButton extends StatelessWidget {
   final bool isPlaying;
   final VoidCallback onTap;
 
+  static const double _size = 45;
+
   const _PlayCircleButton({
     required this.isPlaying,
     required this.onTap,
@@ -355,18 +357,18 @@ class _PlayCircleButton extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(999),
         child: SizedBox(
-          width: 44,
-          height: 44,
+          width: _size,
+          height: _size,
           child: Center(
             // `pause.png` là icon tròn + glyph trong 1 PNG → hiển thị raw.
             child: isPlaying
                 ? const PeekieAssetIcon(
                     PeekieMusicNenIcons.pause,
-                    size: 44,
+                    size: _size,
                   )
                 : Container(
-                    width: 44,
-                    height: 44,
+                    width: _size,
+                    height: _size,
                     decoration: const BoxDecoration(
                       color: DesignTokens.neutral12,
                       shape: BoxShape.circle,
@@ -374,7 +376,7 @@ class _PlayCircleButton extends StatelessWidget {
                     child: const Icon(
                       Icons.play_arrow_rounded,
                       color: Colors.white,
-                      size: 28,
+                      size: 30,
                     ),
                   ),
           ),

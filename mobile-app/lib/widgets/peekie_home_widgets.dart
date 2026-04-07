@@ -11,6 +11,37 @@ import '../providers/music_player_provider.dart';
 import '../models/song.dart';
 import 'peekie_asset_icon.dart';
 
+double _peekieCardTitleFontSize(BuildContext context) {
+  final s = MediaQuery.sizeOf(context).shortestSide;
+  if (s < 360) return 14; // very small phones
+  if (s < 400) return 15; // small phones
+  if (s < 600) return 16; // regular phones
+  return 18; // tablets / large screens
+}
+
+TextStyle? _peekieCardTitleStyle(BuildContext context) {
+  final t = Theme.of(context).textTheme;
+  return t.titleLarge?.copyWith(
+    fontSize: _peekieCardTitleFontSize(context),
+    fontWeight: FontWeight.w800,
+    color: DesignTokens.neutral12,
+  );
+}
+
+double _peekieBadgeFontSize(BuildContext context) {
+  final base = _peekieCardTitleFontSize(context) - 4;
+  return base.clamp(10, 12).toDouble();
+}
+
+TextStyle? _peekieBadgeStyle(BuildContext context, {required Color color}) {
+  final t = Theme.of(context).textTheme;
+  return t.labelSmall?.copyWith(
+    color: color,
+    fontWeight: FontWeight.w800,
+    fontSize: _peekieBadgeFontSize(context),
+  );
+}
+
 class PeekieTopBar extends StatelessWidget {
   final String babyName;
   final VoidCallback? onBack;
@@ -336,36 +367,31 @@ class EnvStatCard extends StatelessWidget {
                 SizedBox(width: 24, height: 24, child: leading),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      label,
-                      maxLines: 1,
-                      softWrap: false,
-                      style: t.titleSmall?.copyWith(
-                        color: DesignTokens.neutral12,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: _peekieCardTitleStyle(context),
                   ),
                 ),
                 const SizedBox(width: 6),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: statusBg,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    statusLabel,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: t.labelSmall?.copyWith(
-                      color: statusFg,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 11,
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 78),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: statusBg,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        statusLabel,
+                        maxLines: 1,
+                        softWrap: false,
+                        style: _peekieBadgeStyle(context, color: statusFg),
+                      ),
                     ),
                   ),
                 ),
@@ -462,10 +488,7 @@ class MiniMusicCard extends StatelessWidget {
                           const SizedBox(width: 8),
                           Text(
                             'Nhạc nền',
-                            style: t.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              color: DesignTokens.neutral12,
-                            ),
+                            style: _peekieCardTitleStyle(context),
                           ),
                           const Spacer(),
                           Stack(
@@ -579,25 +602,25 @@ class MiniMusicCard extends StatelessWidget {
                       const SizedBox(height: 12),
                       LayoutBuilder(
                         builder: (context, constraints) {
-                          const pauseSize = 48.0;
-                          const sideSize = 32.0;
+                          // Keep transport controls visually consistent.
+                          const controlSize = 45.0;
                           const gap = 12.0;
                           final w = constraints.maxWidth;
                           final center = w / 2;
                           return SizedBox(
-                            height: pauseSize,
+                            height: controlSize,
                             width: double.infinity,
                             child: Stack(
                               clipBehavior: Clip.none,
                               children: [
                                 Positioned(
                                   left: center -
-                                      pauseSize / 2 -
+                                      controlSize / 2 -
                                       gap -
-                                      sideSize,
+                                      controlSize,
                                   top: 0,
                                   bottom: 0,
-                                  width: sideSize,
+                                  width: controlSize,
                                   child: Center(
                                     child: InkWell(
                                       onTap: () => player.previous(),
@@ -607,17 +630,17 @@ class MiniMusicCard extends StatelessWidget {
                                         child: PeekieAssetIcon(
                                           PeekieMusicNenIcons
                                               .playSkipBackCircle,
-                                          size: sideSize,
+                                          size: controlSize,
                                         ),
                                       ),
                                     ),
                                   ),
                                 ),
                                 Positioned(
-                                  left: center - pauseSize / 2,
+                                  left: center - controlSize / 2,
                                   top: 0,
                                   bottom: 0,
-                                  width: pauseSize,
+                                  width: controlSize,
                                   child: Center(
                                     child: InkWell(
                                       onTap: () => player.togglePlayPause(),
@@ -627,11 +650,11 @@ class MiniMusicCard extends StatelessWidget {
                                         child: player.isPlaying
                                             ? const PeekieAssetIcon(
                                                 PeekieMusicNenIcons.pause,
-                                                size: pauseSize,
+                                                size: controlSize,
                                               )
                                             : Container(
-                                                width: pauseSize,
-                                                height: pauseSize,
+                                                width: controlSize,
+                                                height: controlSize,
                                                 decoration: const BoxDecoration(
                                                   color: DesignTokens.neutral12,
                                                   shape: BoxShape.circle,
@@ -639,7 +662,7 @@ class MiniMusicCard extends StatelessWidget {
                                                 child: const Icon(
                                                   Icons.play_arrow_rounded,
                                                   color: Colors.white,
-                                                  size: 34,
+                                                  size: 32,
                                                 ),
                                               ),
                                       ),
@@ -647,10 +670,10 @@ class MiniMusicCard extends StatelessWidget {
                                   ),
                                 ),
                                 Positioned(
-                                  left: center + pauseSize / 2 + gap,
+                                  left: center + controlSize / 2 + gap,
                                   top: 0,
                                   bottom: 0,
-                                  width: sideSize,
+                                  width: controlSize,
                                   child: Center(
                                     child: InkWell(
                                       onTap: () => player.next(),
@@ -660,7 +683,7 @@ class MiniMusicCard extends StatelessWidget {
                                         child: PeekieAssetIcon(
                                           PeekieMusicNenIcons
                                               .playSkipForwardCircle,
-                                          size: sideSize,
+                                          size: controlSize,
                                         ),
                                       ),
                                     ),
@@ -726,6 +749,10 @@ class ExpressionPeekieCard extends StatelessWidget {
   final VoidCallback onPickRelax;
   final VoidCallback onCustomize;
 
+  static const Color _enabledTrack = Color(0xFF1B2E53);
+  static const Color _disabledTrack = Color(0xFFE6E9EF);
+  static const Color _thumbColor = Colors.white;
+
   const ExpressionPeekieCard({
     super.key,
     required this.enabled,
@@ -739,16 +766,11 @@ class ExpressionPeekieCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = Theme.of(context).textTheme;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFFFFF6D3),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: DesignTokens.sunlight6.withOpacity(0.38),
-          width: 1,
-        ),
         boxShadow: [
           BoxShadow(
             color: DesignTokens.neutral12.withOpacity(0.05),
@@ -767,17 +789,15 @@ class ExpressionPeekieCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   'Màn hình biểu cảm Peekie',
-                  style: t.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: DesignTokens.neutral12,
-                  ),
+                  style: _peekieCardTitleStyle(context),
                 ),
               ),
-              Switch.adaptive(
+              _PeekieToggle(
                 value: enabled,
                 onChanged: onEnabledChanged,
-                activeColor: DesignTokens.babyBlue7,
-                activeTrackColor: DesignTokens.babyBlue3,
+                enabledTrackColor: _enabledTrack,
+                disabledTrackColor: _disabledTrack,
+                thumbColor: _thumbColor,
               ),
             ],
           ),
@@ -819,7 +839,7 @@ class ExpressionPeekieCard extends StatelessWidget {
   }) {
     final bg = selected
         ? DesignTokens.neutral1
-        : Colors.white.withOpacity(0.72);
+        : Colors.transparent;
     const fg = DesignTokens.neutral12;
     final glyph = PeekieAssetIcon(assetPath, size: 26, color: fg);
     return Material(
@@ -857,9 +877,92 @@ class ExpressionPeekieCard extends StatelessWidget {
   }
 }
 
+class _PeekieToggle extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool> onChanged;
+  final Color enabledTrackColor;
+  final Color disabledTrackColor;
+  final Color thumbColor;
+
+  const _PeekieToggle({
+    required this.value,
+    required this.onChanged,
+    required this.enabledTrackColor,
+    required this.disabledTrackColor,
+    required this.thumbColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const w = 44.0;
+    const h = 24.0;
+    const r = 20.0;
+    const pad = 2.0;
+    final track = value ? enabledTrackColor : disabledTrackColor;
+    final shadow = value
+        ? enabledTrackColor.withOpacity(0.28)
+        : Colors.black.withOpacity(0.10);
+
+    return Semantics(
+      button: true,
+      toggled: value,
+      label: 'Bật tắt màn hình biểu cảm Peekie',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => onChanged(!value),
+          borderRadius: BorderRadius.circular(r),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            curve: Curves.easeOut,
+            width: w,
+            height: h,
+            padding: const EdgeInsets.all(pad),
+            decoration: BoxDecoration(
+              color: track,
+              borderRadius: BorderRadius.circular(r),
+              boxShadow: [
+                BoxShadow(
+                  color: shadow,
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: AnimatedAlign(
+              duration: const Duration(milliseconds: 160),
+              curve: Curves.easeOut,
+              alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+              child: Container(
+                width: h - pad * 2,
+                height: h - pad * 2,
+                decoration: BoxDecoration(
+                  color: thumbColor,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.14),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class SoothingModeBar extends StatelessWidget {
   final bool enabled;
   final ValueChanged<bool> onChanged;
+
+  static const Color _enabledTrack = Color(0xFF1B2E53);
+  static const Color _disabledTrack = Color(0xFFE6E9EF);
+  static const Color _thumbColor = Colors.white;
 
   const SoothingModeBar({
     super.key,
@@ -869,7 +972,6 @@ class SoothingModeBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = Theme.of(context).textTheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
@@ -886,10 +988,7 @@ class SoothingModeBar extends StatelessWidget {
                 Flexible(
                   child: Text(
                     'Chế độ Dỗ dành',
-                    style: t.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: DesignTokens.neutral12,
-                    ),
+                    style: _peekieCardTitleStyle(context),
                   ),
                 ),
                 const SizedBox(width: 6),
@@ -898,11 +997,12 @@ class SoothingModeBar extends StatelessWidget {
               ],
             ),
           ),
-          Switch.adaptive(
+          _PeekieToggle(
             value: enabled,
             onChanged: onChanged,
-            activeColor: DesignTokens.neutral12,
-            activeTrackColor: DesignTokens.babyBlue5,
+            enabledTrackColor: _enabledTrack,
+            disabledTrackColor: _disabledTrack,
+            thumbColor: _thumbColor,
           ),
         ],
       ),

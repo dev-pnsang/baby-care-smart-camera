@@ -239,43 +239,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final streamHeight = (screenWidth - 40) * 9 / 16;
+    final streamHeight = screenWidth * 9 / 16;
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppTheme.backgroundGradient,
-        ),
-        child: SafeArea(
-          child: Stack(
-            children: [
-              CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: PeekieTopBar(
-                      onSettings: () =>
-                          Navigator.pushNamed(context, '/settings'),
-                    ),
+      backgroundColor: DesignTokens.neutral1, // #FDFDFD
+      body: SafeArea(
+        child: Stack(
+          children: [
+            CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: PeekieTopBar(
+                    onSettings: () => Navigator.pushNamed(context, '/settings'),
                   ),
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    sliver: SliverToBoxAdapter(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        mainAxisSize: MainAxisSize.min,
+                ),
+                SliverToBoxAdapter(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(AppTheme.streamRadius),
+                    child: Container(
+                      width: screenWidth,
+                      height: streamHeight,
+                      decoration: BoxDecoration(
+                        color: Colors.black87,
+                        boxShadow: AppTheme.innerGlow,
+                      ),
+                      child: Stack(
                         children: [
-                          ClipRRect(
-                            borderRadius:
-                                BorderRadius.circular(AppTheme.streamRadius),
-                            child: Container(
-                              width: screenWidth - 40,
-                              height: streamHeight,
-                              decoration: BoxDecoration(
-                                color: Colors.black87,
-                                boxShadow: AppTheme.innerGlow,
-                              ),
-                              child: Stack(
-                                children: [
                                   if (_videoPlayerController != null &&
                                       _errorMessage == null)
                                     VlcPlayer(
@@ -419,155 +408,160 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 ],
                               ),
                             ),
+                  ),
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  sliver: SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (_videoPlayerController != null &&
+                            _errorMessage == null)
+                          NavyCameraToolbar(
+                            isMuted: _isMuted,
+                            onToggleMute: _toggleMute,
+                            onFullscreen: _openFullscreen,
                           ),
-                          if (_videoPlayerController != null &&
-                              _errorMessage == null)
-                            NavyCameraToolbar(
-                              isMuted: _isMuted,
-                              onToggleMute: _toggleMute,
-                              onFullscreen: _openFullscreen,
+                        const SizedBox(height: 14),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            EnvStatCard(
+                              leading: PeekieAssetIcon(
+                                PeekieIconAssets.temperature,
+                                size: 24,
+                                color: DesignTokens.neutral12,
+                              ),
+                              label: 'Nhiệt độ',
+                              value: '26°C',
+                              footer: 'Nhiệt độ TB: 27°C',
+                              statusLabel: 'Ổn',
+                              statusBg: const Color(0xFF25A249),
+                              statusFg: Colors.white,
                             ),
-                          const SizedBox(height: 14),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              EnvStatCard(
-                                leading: PeekieAssetIcon(
-                                  PeekieIconAssets.temperature,
-                                  size: 24,
-                                  color: DesignTokens.neutral12,
-                                ),
-                                label: 'Nhiệt độ',
-                                value: '26°C',
-                                footer: 'Nhiệt độ TB: 27°C',
-                                statusLabel: 'Ổn',
-                                statusBg: const Color(0xFF25A249),
-                                statusFg: Colors.white,
+                            const SizedBox(width: 12),
+                            EnvStatCard(
+                              leading: PeekieAssetIcon(
+                                PeekieIconAssets.humidity,
+                                size: 24,
+                                color: DesignTokens.neutral12,
                               ),
-                              const SizedBox(width: 12),
-                              EnvStatCard(
-                                leading: PeekieAssetIcon(
-                                  PeekieIconAssets.humidity,
-                                  size: 24,
-                                  color: DesignTokens.neutral12,
-                                ),
-                                label: 'Độ ẩm',
-                                value: '40%',
-                                footer: 'Độ ẩm TB: 40%',
-                                statusLabel: 'Hơi khô',
-                                statusBg: const Color(0xFFF1A61B),
-                                statusFg: Colors.white,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 14),
-                          MiniMusicCard(
-                            onOpenLibrary: () =>
-                                Navigator.pushNamed(context, '/lullaby'),
-                          ),
-                          const SizedBox(height: 14),
-                          ExpressionPeekieCard(
-                            enabled: _expressionScreenOn,
-                            onEnabledChanged: (v) =>
-                                setState(() => _expressionScreenOn = v),
-                            selectedQuick: _quickExpression,
-                            onPickAuto: () {
-                              setState(
-                                  () => _quickExpression = PeekieQuickExpression.auto);
-                              notifyExpressionIfEnabled(context, 'calm');
-                            },
-                            onPickHappy: () {
-                              setState(() =>
-                                  _quickExpression = PeekieQuickExpression.happy);
-                              notifyExpressionIfEnabled(context, 'happy');
-                            },
-                            onPickRelax: () {
-                              setState(() =>
-                                  _quickExpression = PeekieQuickExpression.relax);
-                              notifyExpressionIfEnabled(context, 'calm');
-                            },
-                            onCustomize: () {
-                              // Start MQTT connection early so emotion taps can publish immediately.
-                              unawaited(MqttService.instance.ensureConnected());
-                              showPeekieExpressionCustomizeSheet(
-                                context,
-                                initialChannelId: _customEmotionChannelId,
-                                onSelected: (opt) {
-                                  if (!mounted) return;
-                                  setState(() {
-                                    _quickExpression =
-                                        PeekieQuickExpression.custom;
-                                    _customEmotionChannelId = opt.channelId;
-                                  });
+                              label: 'Độ ẩm',
+                              value: '40%',
+                              footer: 'Độ ẩm TB: 40%',
+                              statusLabel: 'Hơi khô',
+                              statusBg: const Color(0xFFF1A61B),
+                              statusFg: Colors.white,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        MiniMusicCard(
+                          onOpenLibrary: () =>
+                              Navigator.pushNamed(context, '/lullaby'),
+                        ),
+                        const SizedBox(height: 14),
+                        ExpressionPeekieCard(
+                          enabled: _expressionScreenOn,
+                          onEnabledChanged: (v) =>
+                              setState(() => _expressionScreenOn = v),
+                          selectedQuick: _quickExpression,
+                          onPickAuto: () {
+                            setState(() =>
+                                _quickExpression = PeekieQuickExpression.auto);
+                            notifyExpressionIfEnabled(context, 'calm');
+                          },
+                          onPickHappy: () {
+                            setState(() =>
+                                _quickExpression = PeekieQuickExpression.happy);
+                            notifyExpressionIfEnabled(context, 'happy');
+                          },
+                          onPickRelax: () {
+                            setState(() =>
+                                _quickExpression = PeekieQuickExpression.relax);
+                            notifyExpressionIfEnabled(context, 'calm');
+                          },
+                          onCustomize: () {
+                            // Start MQTT connection early so emotion taps can publish immediately.
+                            unawaited(MqttService.instance.ensureConnected());
+                            showPeekieExpressionCustomizeSheet(
+                              context,
+                              initialChannelId: _customEmotionChannelId,
+                              onSelected: (opt) {
+                                if (!mounted) return;
+                                setState(() {
+                                  _quickExpression = PeekieQuickExpression.custom;
+                                  _customEmotionChannelId = opt.channelId;
+                                });
+                              },
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 14),
+                        SoothingModeBar(
+                          enabled: _soothingMode,
+                          onChanged: (v) => setState(() => _soothingMode = v),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: FilledButton(
+                                onPressed: () {
+                                  showPeekieNoiseDialog(
+                                    context,
+                                    onAck: () {},
+                                  );
                                 },
-                              );
-                            },
-                          ),
-                          SoothingModeBar(
-                            enabled: _soothingMode,
-                            onChanged: (v) =>
-                                setState(() => _soothingMode = v),
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: FilledButton(
-                                  onPressed: () {
-                                    showPeekieNoiseDialog(
-                                      context,
-                                      onAck: () {},
-                                    );
-                                  },
-                                  style: FilledButton.styleFrom(
-                                    backgroundColor: DesignTokens.neutral12,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 14),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: DesignTokens.neutral12,
+                                  foregroundColor: Colors.white,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
                                   ),
-                                  child: const Text('Test thông báo ồn'),
                                 ),
+                                child: const Text('Test thông báo ồn'),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: FilledButton(
-                                  onPressed: () {
-                                    showPeekieCryDialog(
-                                      context,
-                                      babyName: 'Bi',
-                                      onSoothing: () {},
-                                      onDismiss: () {},
-                                    );
-                                  },
-                                  style: FilledButton.styleFrom(
-                                    backgroundColor: const Color(0xFFCCE6FF),
-                                    foregroundColor: DesignTokens.neutral12,
-                                    elevation: 0,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 14),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: FilledButton(
+                                onPressed: () {
+                                  showPeekieCryDialog(
+                                    context,
+                                    babyName: 'Bi',
+                                    onSoothing: () {},
+                                    onDismiss: () {},
+                                  );
+                                },
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: const Color(0xFFCCE6FF),
+                                  foregroundColor: DesignTokens.neutral12,
+                                  elevation: 0,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
                                   ),
-                                  child: const Text('Test thông báo khóc'),
                                 ),
+                                child: const Text('Test thông báo khóc'),
                               ),
-                            ],
-                          ),
-                          SizedBox(
-                              height: kPeekieShowBottomNavBar ? 120 : 24),
-                        ],
-                      ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: kPeekieShowBottomNavBar ? 120 : 24),
+                      ],
                     ),
                   ),
-                ],
-              ),
-              const CustomBottomNavBar(currentRoute: '/'),
-            ],
-          ),
+                ),
+              ],
+            ),
+            const CustomBottomNavBar(currentRoute: '/'),
+          ],
         ),
       ),
     );
