@@ -48,7 +48,7 @@ class _ExpressionControllerScreenState
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
-          color: DesignTokens.sunlight2,
+          color: DesignTokens.neutral1, // #FDFDFD
         ),
         child: SafeArea(
           child: Stack(

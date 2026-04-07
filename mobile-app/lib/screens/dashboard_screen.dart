@@ -16,6 +16,7 @@ import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/peekie_asset_icon.dart';
 import '../widgets/peekie_expression_customize_sheet.dart';
 import '../widgets/peekie_home_widgets.dart';
+import '../widgets/lullaby_library_sheet.dart';
 import '../services/mqtt_service.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -89,7 +90,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           babyName: 'Bi',
           onSoothing: () {
             setState(() => _soothingMode = true);
-            Navigator.pushNamed(context, '/lullaby');
+            _openLullabySheet();
           },
           onDismiss: () {},
         );
@@ -234,6 +235,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _videoPlayerController?.stop();
     _videoPlayerController?.dispose();
     super.dispose();
+  }
+
+  Future<void> _openLullabySheet() async {
+    if (!mounted) return;
+    await showLullabyLibrarySheet(context);
   }
 
   @override
@@ -459,8 +465,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                         const SizedBox(height: 14),
                         MiniMusicCard(
-                          onOpenLibrary: () =>
-                              Navigator.pushNamed(context, '/lullaby'),
+                          onOpenLibrary: _openLullabySheet,
                         ),
                         const SizedBox(height: 14),
                         ExpressionPeekieCard(

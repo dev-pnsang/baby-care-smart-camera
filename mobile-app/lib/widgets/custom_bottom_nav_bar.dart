@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/design_tokens.dart';
 import '../theme/peekie_icon_assets.dart';
+import 'lullaby_library_sheet.dart';
 import 'peekie_asset_icon.dart';
 
 /// Đặt `true` khi cần hiện lại thanh navbar dưới.
@@ -53,7 +54,7 @@ class CustomBottomNavBar extends StatelessWidget {
         Navigator.pushReplacementNamed(context, '/expression');
         break;
       case 2:
-        Navigator.pushReplacementNamed(context, '/lullaby');
+        showLullabyLibrarySheet(context);
         break;
       case 3:
         Navigator.pushReplacementNamed(context, '/settings');
@@ -240,11 +241,15 @@ class _NavItemState extends State<_NavItem> {
                       color: widget.isActive ? activeColor : inactiveColor,
                       fontWeight: widget.isActive ? FontWeight.w600 : FontWeight.normal,
                     ),
-                    child: Text(
-                      widget.label,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                      textAlign: TextAlign.center,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        widget.label,
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.visible,
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ),
                 );

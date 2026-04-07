@@ -13,10 +13,32 @@ import 'peekie_asset_icon.dart';
 
 double _peekieCardTitleFontSize(BuildContext context) {
   final s = MediaQuery.sizeOf(context).shortestSide;
-  if (s < 360) return 14; // very small phones
-  if (s < 400) return 15; // small phones
-  if (s < 600) return 16; // regular phones
-  return 18; // tablets / large screens
+  if (s < 360) return 11; // very small phones
+  if (s < 400) return 12; // small phones
+  if (s < 600) return 14; // regular phones
+  return 16; // tablets / large screens
+}
+
+double _peekieEnvLeadingSize(BuildContext context) {
+  final s = MediaQuery.sizeOf(context).shortestSide;
+  if (s < 360) return 16; // very small phones
+  if (s < 400) return 18; // small phones
+  if (s < 600) return 22; // regular phones
+  return 24; // tablets / large screens
+}
+
+double _peekieEnvStatusMaxWidth(BuildContext context) {
+  final s = MediaQuery.sizeOf(context).shortestSide;
+  if (s < 360) return 50;
+  if (s < 400) return 58;
+  return 66;
+}
+
+EdgeInsets _peekieEnvStatusPadding(BuildContext context) {
+  final s = MediaQuery.sizeOf(context).shortestSide;
+  if (s < 360) return const EdgeInsets.symmetric(horizontal: 6, vertical: 2.0);
+  if (s < 400) return const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5);
+  return const EdgeInsets.symmetric(horizontal: 8, vertical: 3.0);
 }
 
 TextStyle? _peekieCardTitleStyle(BuildContext context) {
@@ -30,7 +52,7 @@ TextStyle? _peekieCardTitleStyle(BuildContext context) {
 
 double _peekieBadgeFontSize(BuildContext context) {
   final base = _peekieCardTitleFontSize(context) - 4;
-  return base.clamp(10, 12).toDouble();
+  return base.clamp(8, 10).toDouble();
 }
 
 TextStyle? _peekieBadgeStyle(BuildContext context, {required Color color}) {
@@ -362,27 +384,39 @@ class EnvStatCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(width: 24, height: 24, child: leading),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: _peekieCardTitleStyle(context),
+                SizedBox(
+                  width: _peekieEnvLeadingSize(context),
+                  height: _peekieEnvLeadingSize(context),
+                  child: FittedBox(
+                    fit: BoxFit.contain,
+                    child: leading,
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 1),
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      softWrap: false,
+                      overflow: TextOverflow.visible,
+                      style: _peekieCardTitleStyle(context),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
                 ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 78),
+                  constraints: BoxConstraints(
+                    maxWidth: _peekieEnvStatusMaxWidth(context),
+                  ),
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: _peekieEnvStatusPadding(context),
                     decoration: BoxDecoration(
                       color: statusBg,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
@@ -482,15 +516,19 @@ class MiniMusicCard extends StatelessWidget {
                         children: [
                           PeekieAssetIcon(
                             PeekieIconAssets.musicNote,
-                            size: 22,
+                            size: 20,
                             color: DesignTokens.neutral12,
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Nhạc nền',
-                            style: _peekieCardTitleStyle(context),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'Nhạc nền',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: _peekieCardTitleStyle(context),
+                            ),
                           ),
-                          const Spacer(),
+                          const SizedBox(width: 10),
                           Stack(
                             clipBehavior: Clip.none,
                             children: [

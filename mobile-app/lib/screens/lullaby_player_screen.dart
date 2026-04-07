@@ -20,6 +20,9 @@ class _LullabyPlayerScreenState extends State<LullabyPlayerScreen> {
   SongCategory? _selectedCategory;
   String _query = '';
 
+  static const Color _searchBg = Color(0xFFF2F4F8);
+  static const Color _searchBorder = Color(0xFFDDE1E6);
+
   String _formatDurationLabel(Duration duration) {
     final totalMinutes = duration.inMinutes;
     if (totalMinutes >= 60) {
@@ -44,7 +47,8 @@ class _LullabyPlayerScreenState extends State<LullabyPlayerScreen> {
     final q = _query.trim().toLowerCase();
     final songs = context.read<MusicPlayerProvider>().songs;
     return songs.where((s) {
-      final catOk = _selectedCategory == null || s.category == _selectedCategory;
+      final catOk =
+          _selectedCategory == null || s.category == _selectedCategory;
       final qOk = q.isEmpty || s.title.toLowerCase().contains(q);
       return catOk && qOk;
     }).toList(growable: false);
@@ -111,10 +115,16 @@ class _LullabyPlayerScreenState extends State<LullabyPlayerScreen> {
                             hintText: 'Tìm kiếm',
                             prefixIcon: const Icon(Icons.search_rounded),
                             filled: true,
-                            fillColor: DesignTokens.neutral3,
-                            border: OutlineInputBorder(
+                            fillColor: _searchBg,
+                            enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
-                              borderSide: BorderSide.none,
+                              borderSide: const BorderSide(
+                                  color: _searchBorder, width: 1),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: const BorderSide(
+                                  color: _searchBorder, width: 1),
                             ),
                           ),
                         ),
@@ -133,26 +143,27 @@ class _LullabyPlayerScreenState extends State<LullabyPlayerScreen> {
                               const SizedBox(width: 8),
                               _FilterChip(
                                 label: 'Tiếng ồn trắng',
-                                selected:
-                                    _selectedCategory == SongCategory.whiteNoise,
+                                selected: _selectedCategory ==
+                                    SongCategory.whiteNoise,
                                 onSelected: (_) => setState(() =>
-                                    _selectedCategory = SongCategory.whiteNoise),
+                                    _selectedCategory =
+                                        SongCategory.whiteNoise),
                               ),
                               const SizedBox(width: 8),
                               _FilterChip(
                                 label: 'Hát ru',
                                 selected:
                                     _selectedCategory == SongCategory.lullaby,
-                                onSelected: (_) => setState(
-                                    () => _selectedCategory = SongCategory.lullaby),
+                                onSelected: (_) => setState(() =>
+                                    _selectedCategory = SongCategory.lullaby),
                               ),
                               const SizedBox(width: 8),
                               _FilterChip(
                                 label: 'Truyện cổ',
                                 selected:
                                     _selectedCategory == SongCategory.fairyTale,
-                                onSelected: (_) => setState(
-                                    () => _selectedCategory = SongCategory.fairyTale),
+                                onSelected: (_) => setState(() =>
+                                    _selectedCategory = SongCategory.fairyTale),
                               ),
                             ],
                           ),
@@ -183,27 +194,28 @@ class _LullabyPlayerScreenState extends State<LullabyPlayerScreen> {
                             ),
                           )
                         : ListView.builder(
-                      padding: const EdgeInsets.only(
-                        left: 20,
-                        right: 20,
-                        bottom: 24,
-                      ),
-                      itemCount: songs.length,
-                      itemBuilder: (context, index) {
-                        final song = songs[index];
-                        final isCurrent = player.currentSong.id == song.id;
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: _SongCard(
-                            song: song,
-                            isPlaying: isCurrent && player.isPlaying,
-                            onTap: () => _togglePlayFor(song),
-                            subtitle:
-                                '${_categoryLabel(song.category)} • ${_formatDurationLabel(song.duration)}',
+                            padding: const EdgeInsets.only(
+                              left: 20,
+                              right: 20,
+                              bottom: 24,
+                            ),
+                            itemCount: songs.length,
+                            itemBuilder: (context, index) {
+                              final song = songs[index];
+                              final isCurrent =
+                                  player.currentSong.id == song.id;
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 2),
+                                child: _SongCard(
+                                  song: song,
+                                  isPlaying: isCurrent && player.isPlaying,
+                                  onTap: () => _togglePlayFor(song),
+                                  subtitle:
+                                      '${_categoryLabel(song.category)} • ${_formatDurationLabel(song.duration)}',
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
                   ),
                 ],
               ),
@@ -263,7 +275,16 @@ class _SongCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
-    final bg = isPlaying ? const Color(0xFFE2F1FF) : Colors.white;
+    final bg = isPlaying ? const Color(0xFFE6F2FF) : Colors.transparent;
+    final shadow = isPlaying
+        ? [
+            BoxShadow(
+              color: DesignTokens.neutral12.withOpacity(0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ]
+        : const <BoxShadow>[];
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -274,13 +295,7 @@ class _SongCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: bg,
             borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: DesignTokens.neutral12.withOpacity(0.06),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            boxShadow: shadow,
           ),
           child: Row(
             children: [
@@ -385,4 +400,3 @@ class _PlayCircleButton extends StatelessWidget {
     );
   }
 }
-
