@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../screens/cry_detector_mic_test_screen.dart';
 import '../theme/design_tokens.dart';
 import '../theme/peekie_gradients.dart';
 import '../theme/peekie_icon_assets.dart';
@@ -330,7 +331,13 @@ class NavyCameraToolbar extends StatelessWidget {
           assetBtn(PeekieIconAssets.record, () => stub('Ghi hình — sắp có')),
           assetBtn(PeekieIconAssets.camera, () => stub('Chụp ảnh — sắp có')),
           assetBtn(
-              PeekieIconAssets.microphone, () => stub('Đàm thoại — sắp có')),
+            PeekieIconAssets.microphone,
+            () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const CryDetectorMicTestScreen(),
+              ),
+            ),
+          ),
           assetBtn(volumeAsset, onToggleMute),
           assetBtn(
             PeekieIconAssets.pictureInPicture,
