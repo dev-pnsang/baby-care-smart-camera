@@ -597,28 +597,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Row(
                           children: [
                             Expanded(
-                              child: FilledButton(
+                              child: _PeekieTestNotifyButton(
+                                label: 'Test thông báo ồn',
+                                backgroundColor: DesignTokens.neutral12,
                                 onPressed: () {
                                   showPeekieNoiseDialog(
                                     context,
                                     onAck: () {},
                                   );
                                 },
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: DesignTokens.neutral12,
-                                  foregroundColor: Colors.white,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                ),
-                                child: const Text('Test thông báo ồn'),
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: 10),
                             Expanded(
-                              child: FilledButton(
+                              child: _PeekieTestNotifyButton(
+                                label: 'Test thông báo khóc',
+                                backgroundColor: DesignTokens.babyBlue10,
                                 onPressed: () {
                                   showPeekieCryDialog(
                                     context,
@@ -627,17 +621,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     onDismiss: () {},
                                   );
                                 },
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: const Color(0xFFCCE6FF),
-                                  foregroundColor: DesignTokens.neutral12,
-                                  elevation: 0,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                ),
-                                child: const Text('Test thông báo khóc'),
                               ),
                             ),
                           ],
@@ -651,6 +634,57 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const CustomBottomNavBar(currentRoute: '/'),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Nút preview thông báo: cùng chiều cao, chữ căn giữa (tránh một nút cao hơn vì xuống dòng).
+class _PeekieTestNotifyButton extends StatelessWidget {
+  const _PeekieTestNotifyButton({
+    required this.label,
+    required this.backgroundColor,
+    required this.onPressed,
+  });
+
+  final String label;
+  final Color backgroundColor;
+  final VoidCallback onPressed;
+
+  static const double _height = 52;
+
+  @override
+  Widget build(BuildContext context) {
+    final textStyle = Theme.of(context).textTheme.labelLarge?.copyWith(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+          fontSize: 13,
+          height: 1.2,
+        );
+    return SizedBox(
+      height: _height,
+      width: double.infinity,
+      child: FilledButton(
+        onPressed: onPressed,
+        style: FilledButton.styleFrom(
+          backgroundColor: backgroundColor,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          textStyle: textStyle,
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
       ),
     );

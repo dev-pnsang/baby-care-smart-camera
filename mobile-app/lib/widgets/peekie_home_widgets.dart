@@ -695,88 +695,79 @@ class MiniMusicCard extends StatelessWidget {
                       const SizedBox(height: 12),
                       LayoutBuilder(
                         builder: (context, constraints) {
-                          // Keep transport controls visually consistent.
-                          const controlSize = 45.0;
+                          // Một kích thước ảnh + cùng padding cho prev / play / next.
+                          const transportIconSize = 40.0;
+                          const transportPad = 4.0;
+                          final slotSize = transportIconSize + transportPad * 2;
                           const gap = 12.0;
                           final w = constraints.maxWidth;
                           final center = w / 2;
                           return SizedBox(
-                            height: controlSize,
+                            height: slotSize,
                             width: double.infinity,
                             child: Stack(
                               clipBehavior: Clip.none,
                               children: [
                                 Positioned(
                                   left: center -
-                                      controlSize / 2 -
+                                      slotSize / 2 -
                                       gap -
-                                      controlSize,
+                                      slotSize,
                                   top: 0,
                                   bottom: 0,
-                                  width: controlSize,
+                                  width: slotSize,
                                   child: Center(
                                     child: InkWell(
                                       onTap: () => player.previous(),
                                       borderRadius: BorderRadius.circular(999),
-                                      child: const Padding(
-                                        padding: EdgeInsets.all(4),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(
+                                            transportPad),
                                         child: PeekieAssetIcon(
                                           PeekieMusicNenIcons
                                               .playSkipBackCircle,
-                                          size: controlSize,
+                                          size: transportIconSize,
                                         ),
                                       ),
                                     ),
                                   ),
                                 ),
                                 Positioned(
-                                  left: center - controlSize / 2,
+                                  left: center - slotSize / 2,
                                   top: 0,
                                   bottom: 0,
-                                  width: controlSize,
+                                  width: slotSize,
                                   child: Center(
                                     child: InkWell(
                                       onTap: () => player.togglePlayPause(),
                                       borderRadius: BorderRadius.circular(999),
                                       child: Padding(
-                                        padding: const EdgeInsets.all(2),
-                                        child: player.isPlaying
-                                            ? const PeekieAssetIcon(
-                                                PeekieMusicNenIcons.pause,
-                                                size: controlSize,
-                                              )
-                                            : Container(
-                                                width: controlSize,
-                                                height: controlSize,
-                                                decoration: const BoxDecoration(
-                                                  color: DesignTokens.neutral12,
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: const Icon(
-                                                  Icons.play_arrow_rounded,
-                                                  color: Colors.white,
-                                                  size: 32,
-                                                ),
-                                              ),
+                                        padding: const EdgeInsets.all(
+                                            transportPad),
+                                        child: PeekieAnimatedPlayPauseIcon(
+                                          isPlaying: player.isPlaying,
+                                          size: transportIconSize,
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
                                 Positioned(
-                                  left: center + controlSize / 2 + gap,
+                                  left: center + slotSize / 2 + gap,
                                   top: 0,
                                   bottom: 0,
-                                  width: controlSize,
+                                  width: slotSize,
                                   child: Center(
                                     child: InkWell(
                                       onTap: () => player.next(),
                                       borderRadius: BorderRadius.circular(999),
-                                      child: const Padding(
-                                        padding: EdgeInsets.all(4),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(
+                                            transportPad),
                                         child: PeekieAssetIcon(
                                           PeekieMusicNenIcons
                                               .playSkipForwardCircle,
-                                          size: controlSize,
+                                          size: transportIconSize,
                                         ),
                                       ),
                                     ),

@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../models/song.dart';
 import '../providers/music_player_provider.dart';
 import '../theme/design_tokens.dart';
-import '../theme/peekie_icon_assets.dart';
 import 'peekie_asset_icon.dart';
 
 Future<void> showLullabyLibrarySheet(BuildContext context) {
@@ -381,7 +380,8 @@ class _PlayCircleButton extends StatelessWidget {
   final bool isPlaying;
   final VoidCallback onTap;
 
-  static const double _size = 45;
+  static const double _size = 48;
+  static const double _playPauseAssetSize = 40;
 
   const _PlayCircleButton({
     required this.isPlaying,
@@ -399,24 +399,10 @@ class _PlayCircleButton extends StatelessWidget {
           width: _size,
           height: _size,
           child: Center(
-            child: isPlaying
-                ? const PeekieAssetIcon(
-                    PeekieMusicNenIcons.pause,
-                    size: _size,
-                  )
-                : Container(
-                    width: _size,
-                    height: _size,
-                    decoration: const BoxDecoration(
-                      color: DesignTokens.neutral12,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.play_arrow_rounded,
-                      color: Colors.white,
-                      size: 30,
-                    ),
-                  ),
+            child: PeekieAnimatedPlayPauseIcon(
+              isPlaying: isPlaying,
+              size: _playPauseAssetSize,
+            ),
           ),
         ),
       ),

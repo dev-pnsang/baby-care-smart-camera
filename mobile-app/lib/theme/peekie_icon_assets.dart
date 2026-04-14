@@ -2,6 +2,7 @@
 /// Đường dẫn khớp file trong `assets/icons/`.
 abstract final class PeekieMusicNenIcons {
   /// Nút tròn + glyph trong một PNG — hiển thị raw, không tint.
+  static const String playButton = 'assets/icons/play_button.png';
   static const String pause = 'assets/icons/pause.png';
   static const String playSkipBackCircle =
       'assets/icons/play-skip-back-circle.png';
@@ -28,6 +29,7 @@ abstract final class PeekieIconAssets {
 
   static const String skipBack = PeekieMusicNenIcons.playSkipBackCircle;
   static const String skipForward = PeekieMusicNenIcons.playSkipForwardCircle;
+  static const String playButton = PeekieMusicNenIcons.playButton;
   static const String pause = PeekieMusicNenIcons.pause;
 
   static const String cloud = '$_root/cloud.png';
