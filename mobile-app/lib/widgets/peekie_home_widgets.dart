@@ -311,12 +311,60 @@ class NavyCameraToolbar extends StatelessWidget {
       );
     }
 
+    Widget volumeBtn() {
+      final volumeAsset =
+          isMuted ? PeekieIconAssets.volumeMedium : PeekieIconAssets.volumeHigh;
+
+      return Semantics(
+        button: true,
+        label: isMuted ? 'Bật tiếng' : 'Tắt tiếng',
+        child: Tooltip(
+          message: isMuted ? 'Đang tắt tiếng' : 'Đang bật tiếng',
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onToggleMute,
+              borderRadius: BorderRadius.circular(20),
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.center,
+                  children: [
+                    PeekieAssetIcon(
+                      volumeAsset,
+                      size: 24,
+                      color: Colors.white,
+                    ),
+                    if (isMuted)
+                      Positioned(
+                        right: -2,
+                        top: -2,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFEB5757),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.close_rounded,
+                            size: 12,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     void stub(String msg) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     }
-
-    final volumeAsset =
-        isMuted ? PeekieIconAssets.volumeMedium : PeekieIconAssets.volumeHigh;
 
     return Container(
       margin: const EdgeInsets.only(top: 12),
@@ -338,7 +386,7 @@ class NavyCameraToolbar extends StatelessWidget {
               ),
             ),
           ),
-          assetBtn(volumeAsset, onToggleMute),
+          volumeBtn(),
           assetBtn(
             PeekieIconAssets.pictureInPicture,
             onFullscreen ?? () => stub('PiP — sắp có'),

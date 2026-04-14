@@ -9,6 +9,7 @@ import '../theme/app_theme.dart';
 import '../theme/design_tokens.dart';
 import '../providers/baby_status_provider.dart';
 import '../providers/camera_provider.dart';
+import '../models/camera_settings.dart';
 import '../providers/camera_settings_provider.dart';
 import '../services/noise_detector_service.dart';
 import '../theme/peekie_icon_assets.dart';
@@ -29,11 +30,14 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   late NoiseDetectorService _noiseDetector;
   late BabyStatusProvider _babyStatusProvider;
+  late CameraSettingsProvider _cameraSettingsProvider;
   VlcPlayerController? _videoPlayerController;
   String? _errorMessage;
   bool _isConnecting = true;
   bool _isMuted = false;
   static const int _fullVolume = 100;
+  bool _muteBusy = false;
+  bool _isFullscreen = false;
 
   bool _soothingMode = false;
   bool _expressionScreenOn = true;
@@ -51,6 +55,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
     _babyStatusProvider =
         Provider.of<BabyStatusProvider>(context, listen: false);
+    _cameraSettingsProvider =
+        Provider.of<CameraSettingsProvider>(context, listen: false);
+    _cameraSettingsProvider.addListener(_onCameraCrySettingsChanged);
     _noiseDetector = NoiseDetectorService(_babyStatusProvider);
 
     _babyStatusListener = _onBabyStatusChanged;
@@ -65,10 +72,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
+  void _applyCryThresholdsFromSettings(CameraSettings? s) {
+    final cry = ((s?.cryDetectMinPercent ?? 60).clamp(51, 95)) / 100.0;
+    var noise = ((s?.noiseDetectMaxPercent ?? 50).clamp(20, 94)) / 100.0;
+    if (noise >= cry) {
+      noise = cry - 0.01;
+    }
+    _noiseDetector.updateCryThresholds(
+      cryProbThreshold: cry,
+      noiseProbThreshold: noise,
+    );
+  }
+
+  void _onCameraCrySettingsChanged() {
+    if (!mounted) return;
+    final s = _cameraSettingsProvider.settings;
+    _applyCryThresholdsFromSettings(s);
+    final interval = (s?.soundCheckIntervalSeconds ?? 5).clamp(3, 60);
+    _noiseDetector.updateSampleInterval(interval);
+  }
+
   void _onBabyStatusChanged() {
     if (!mounted) return;
     final baby = _babyStatusProvider;
-    final crying = baby.isCrying;
+    final soundState = baby.crySoundState;
+    final crying = soundState == CrySoundState.crying;
     final level = baby.soundLevel;
 
     if (!_soundLevelPrimed) {
@@ -84,7 +112,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _cryDialogOffered = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        if (!_babyStatusProvider.isCrying) return;
+        if (_babyStatusProvider.crySoundState != CrySoundState.crying) return;
         showPeekieCryDialog(
           context,
           babyName: 'Bi',
@@ -98,7 +126,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     if (_soundLevelPrimed &&
-        !crying &&
+        soundState == CrySoundState.noise &&
         level >= 60 &&
         _lastSoundLevel < 60 &&
         !_noiseDialogOffered) {
@@ -171,7 +199,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
             _errorMessage = null;
           });
           cameraProvider.setStreamingStatus(true);
-          _noiseDetector.startMonitoring(rtspUrl);
+          final s = settingsProvider.settings;
+          final cry = ((s?.cryDetectMinPercent ?? 60).clamp(51, 95)) / 100.0;
+          var noise = ((s?.noiseDetectMaxPercent ?? 50).clamp(20, 94)) / 100.0;
+          if (noise >= cry) {
+            noise = cry - 0.01;
+          }
+          final interval = (s?.soundCheckIntervalSeconds ?? 5).clamp(3, 60);
+          _noiseDetector.startMonitoring(
+            rtspUrl,
+            sampleIntervalSeconds: interval,
+            cryProbThreshold: cry,
+            noiseProbThreshold: noise,
+          );
         }
       });
 
@@ -204,9 +244,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _toggleMute() async {
-    if (_videoPlayerController == null) return;
-    setState(() => _isMuted = !_isMuted);
-    await _videoPlayerController!.setVolume(_isMuted ? 0 : _fullVolume);
+    final controller = _videoPlayerController;
+    if (controller == null) return;
+    if (_muteBusy) return;
+    _muteBusy = true;
+    final nextMuted = !_isMuted;
+    try {
+      await controller.setVolume(nextMuted ? 0 : _fullVolume);
+      if (!mounted) return;
+      setState(() => _isMuted = nextMuted);
+    } finally {
+      _muteBusy = false;
+    }
   }
 
   void _retryConnection() {
@@ -218,18 +267,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _openFullscreen() {
     if (_videoPlayerController == null || _errorMessage != null) return;
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (ctx) => _FullscreenStreamPage(
-          controller: _videoPlayerController!,
-          onClose: () => Navigator.pop(ctx),
-        ),
-      ),
-    );
+    setState(() => _isFullscreen = true);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  }
+
+  void _closeFullscreen() {
+    if (!_isFullscreen) return;
+    setState(() => _isFullscreen = false);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   }
 
   @override
   void dispose() {
+    _cameraSettingsProvider.removeListener(_onCameraCrySettingsChanged);
     _babyStatusProvider.removeListener(_babyStatusListener);
     _noiseDetector.dispose();
     _videoPlayerController?.stop();
@@ -244,6 +294,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isFullscreen && _videoPlayerController != null && _errorMessage == null) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final w = constraints.maxWidth;
+                final h = constraints.maxHeight;
+                final screenAspect = (h == 0) ? (16 / 9) : (w / h);
+                return Center(
+                  child: VlcPlayer(
+                    controller: _videoPlayerController!,
+                    aspectRatio: screenAspect,
+                  ),
+                );
+              },
+            ),
+            const StreamHudOverlay(),
+            SafeArea(
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: IconButton(
+                  onPressed: _closeFullscreen,
+                  icon: const Icon(Icons.close_rounded, color: Colors.white),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     final screenWidth = MediaQuery.of(context).size.width;
     final streamHeight = screenWidth * 9 / 16;
 
@@ -568,61 +652,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const CustomBottomNavBar(currentRoute: '/'),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _FullscreenStreamPage extends StatefulWidget {
-  final VlcPlayerController controller;
-  final VoidCallback onClose;
-
-  const _FullscreenStreamPage({
-    required this.controller,
-    required this.onClose,
-  });
-
-  @override
-  State<_FullscreenStreamPage> createState() => _FullscreenStreamPageState();
-}
-
-class _FullscreenStreamPageState extends State<_FullscreenStreamPage> {
-  @override
-  void initState() {
-    super.initState();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-  }
-
-  @override
-  void dispose() {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Center(
-            child: VlcPlayer(
-              controller: widget.controller,
-              aspectRatio: 16 / 9,
-            ),
-          ),
-          const StreamHudOverlay(),
-          SafeArea(
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: IconButton(
-                onPressed: widget.onClose,
-                icon: const Icon(Icons.close_rounded, color: Colors.white),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -13,15 +13,19 @@ class CameraSettingsProvider extends ChangeNotifier {
   bool get hasValidSettings => _settings != null && _settings!.isValid;
   String? get rtspUrl => hasValidSettings ? _settings!.rtspUrl : null;
 
-  Future<void> load() async {
-    if (_loaded) return;
+  /// [force] = true: đọc lại từ disk (dùng khi mở Cài đặt hoặc sau khi đổi model — tránh instance cũ sau hot reload).
+  Future<void> load({bool force = false}) async {
+    if (_loaded && !force) return;
     final prefs = await SharedPreferences.getInstance();
     final json = prefs.getString(_keyCameraSettings);
     if (json != null) {
       try {
-        _settings = CameraSettings.fromJson(
-          jsonDecode(json) as Map<String, dynamic>,
-        );
+        final map = jsonDecode(json);
+        if (map is Map<String, dynamic>) {
+          _settings = CameraSettings.fromJson(map);
+        } else {
+          _settings = null;
+        }
       } catch (_) {
         _settings = null;
       }

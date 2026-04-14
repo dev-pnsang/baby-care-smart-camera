@@ -21,8 +21,8 @@ class MqttService {
 
   static const bool verboseLogs = true;
 
-  static const String videoTopic = 'device/devfpp/babycam/video';
-  static const String brightnessTopic = 'device/devfpp/babycam/brightness';
+  static const String videoTopic = 'device/babycam/babycam/video';
+  static const String brightnessTopic = 'device/babycam/babycam/brightness';
   static const String videoBasePath = '/home/babycam/videos/';
 
   mqtt_server.MqttServerClient? _client;

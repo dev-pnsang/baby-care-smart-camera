@@ -22,6 +22,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _obscurePassword = true;
   bool _saving = false;
 
+  /// % tối thiểu để báo khóc (AI). Mặc định 60.
+  double _cryDetectMinPercent = 60;
+
+  /// % tối đa: nếu xác suất khóc &lt; mức này → báo noise ngay. Mặc định 50. Phải &lt; [_cryDetectMinPercent].
+  double _noiseDetectMaxPercent = 50;
+
+  /// Giây giữa mỗi lần lấy mẫu âm thanh RTSP (mặc định 5).
+  double _soundCheckIntervalSeconds = 5;
+
   @override
   void initState() {
     super.initState();
@@ -43,7 +52,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _loadInitialValues() async {
     final p = context.read<CameraSettingsProvider>();
-    await p.load();
+    await p.load(force: true);
     final s = p.settings;
     if (!mounted) return;
     if (s != null) {
@@ -51,13 +60,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _userController.text = s.username;
       _passwordController.text = s.password;
       _pathController.text = s.path;
+      _cryDetectMinPercent = s.cryDetectMinPercent.toDouble();
+      _noiseDetectMaxPercent = s.noiseDetectMaxPercent.toDouble();
+      _soundCheckIntervalSeconds = s.soundCheckIntervalSeconds.toDouble();
     }
     setState(() {});
   }
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _saving = true);
+    final cry = _cryDetectMinPercent.round().clamp(51, 95);
+    var noise = _noiseDetectMaxPercent.round().clamp(20, 94);
+    if (noise >= cry) {
+      noise = cry - 1;
+    }
+    final intervalSec =
+        _soundCheckIntervalSeconds.round().clamp(3, 60);
+    setState(() {
+      _cryDetectMinPercent = cry.toDouble();
+      _noiseDetectMaxPercent = noise.toDouble();
+      _soundCheckIntervalSeconds = intervalSec.toDouble();
+      _saving = true;
+    });
     try {
       final settings = CameraSettings(
         ip: _ipController.text.trim(),
@@ -66,6 +90,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         path: _pathController.text.trim().isEmpty
             ? '/live/ch00_0'
             : _pathController.text.trim(),
+        cryDetectMinPercent: cry,
+        noiseDetectMaxPercent: noise,
+        soundCheckIntervalSeconds: intervalSec,
       );
       await context.read<CameraSettingsProvider>().save(settings);
       if (mounted) {
@@ -197,6 +224,122 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 ),
                                 filled: true,
                                 fillColor: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            Text(
+                              'Nhận diện tiếng khóc (RTSP)',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Áp dụng cho audio tách từ luồng camera. Ngưỡng khóc phải lớn hơn ngưỡng noise. Chu kỳ ngắn = phản ứng nhanh nhưng tốn CPU hơn; chu kỳ dài = nhẹ máy nhưng cảnh báo chậm hơn — không làm model “chuẩn hơn” theo nghĩa thống kê.',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: DesignTokens.neutral12.withOpacity(0.65),
+                                  ),
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: DesignTokens.neutral12.withOpacity(0.12),
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text('Báo khóc từ'),
+                                      Text(
+                                        '${_cryDetectMinPercent.round()}%',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Slider(
+                                    value: _cryDetectMinPercent.clamp(51, 95),
+                                    min: 51,
+                                    max: 95,
+                                    divisions: 44,
+                                    label: '${_cryDetectMinPercent.round()}%',
+                                    onChanged: (v) {
+                                      setState(() {
+                                        _cryDetectMinPercent = v;
+                                        if (_noiseDetectMaxPercent >= v) {
+                                          _noiseDetectMaxPercent = v - 1;
+                                        }
+                                      });
+                                    },
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text('Báo noise nếu dưới'),
+                                      Text(
+                                        '${_noiseDetectMaxPercent.round()}%',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Slider(
+                                    value: _noiseDetectMaxPercent.clamp(
+                                      20,
+                                      _cryDetectMinPercent - 1,
+                                    ),
+                                    min: 20,
+                                    max: _cryDetectMinPercent - 1,
+                                    divisions: (_cryDetectMinPercent - 1 - 20)
+                                        .clamp(1, 74)
+                                        .toInt(),
+                                    label:
+                                        '${_noiseDetectMaxPercent.round()}%',
+                                    onChanged: (v) {
+                                      setState(() {
+                                        _noiseDetectMaxPercent = v;
+                                      });
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text('Kiểm tra âm thanh mỗi'),
+                                      Text(
+                                        '${_soundCheckIntervalSeconds.round()} giây',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Slider(
+                                    value: _soundCheckIntervalSeconds.clamp(
+                                        3, 60),
+                                    min: 3,
+                                    max: 60,
+                                    divisions: 57,
+                                    label:
+                                        '${_soundCheckIntervalSeconds.round()}s',
+                                    onChanged: (v) {
+                                      setState(() {
+                                        _soundCheckIntervalSeconds = v;
+                                      });
+                                    },
+                                  ),
+                                ],
                               ),
                             ),
                             const SizedBox(height: 24),

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as dev;
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
@@ -26,17 +27,64 @@ class NoiseDetectorService {
   String? _rtspUrl;
   bool _isSampling = false;
   int _consecutiveHigh = 0;
+  double _cryProbThreshold = 0.6;
+  double _noiseProbThreshold = 0.5;
+  int _consecutiveAiCry = 0;
+  int _consecutiveAiNoise = 0;
+  CrySoundState _lastStableAi = CrySoundState.unknown;
+  int _sampleIntervalSeconds = 5;
 
   NoiseDetectorService(this.babyStatusProvider, {CryClassifier? cryClassifier})
       : cryClassifier = cryClassifier ?? CryClassifier();
 
-  void startMonitoring(String rtspUrl) {
+  /// Đổi chu kỳ lấy mẫu khi user chỉnh trong Cài đặt (giữ nguyên URL đang monitor).
+  void updateSampleInterval(int sampleIntervalSeconds) {
+    final sec = sampleIntervalSeconds.clamp(3, 120);
+    _sampleIntervalSeconds = sec;
+    if (_rtspUrl == null || _rtspUrl!.isEmpty || _timer == null) {
+      return;
+    }
+    _timer?.cancel();
+    _timer = Timer.periodic(Duration(seconds: sec), (_) {
+      _sampleOnce();
+    });
+  }
+
+  /// Cập nhật ngưỡng AI khi user đổi trong Cài đặt (không restart timer).
+  void updateCryThresholds({
+    required double cryProbThreshold,
+    required double noiseProbThreshold,
+  }) {
+    var c = cryProbThreshold.clamp(0.05, 0.99);
+    var n = noiseProbThreshold.clamp(0.05, 0.99);
+    if (n >= c) {
+      n = c - 0.01;
+    }
+    if (n < 0.05) {
+      n = 0.05;
+    }
+    _cryProbThreshold = c;
+    _noiseProbThreshold = n;
+  }
+
+  void startMonitoring(
+    String rtspUrl, {
+    int sampleIntervalSeconds = 5,
+    double cryProbThreshold = 0.6,
+    double noiseProbThreshold = 0.5,
+  }) {
     _rtspUrl = rtspUrl;
+    _sampleIntervalSeconds = sampleIntervalSeconds.clamp(3, 120);
+    _cryProbThreshold = cryProbThreshold;
+    _noiseProbThreshold = noiseProbThreshold;
+    _consecutiveAiCry = 0;
+    _consecutiveAiNoise = 0;
+    _lastStableAi = CrySoundState.unknown;
     _timer?.cancel();
     cryClassifier.load().then((_) {
       _sampleOnce();
     });
-    _timer = Timer.periodic(const Duration(seconds: 4), (_) {
+    _timer = Timer.periodic(Duration(seconds: _sampleIntervalSeconds), (_) {
       _sampleOnce();
     });
   }
@@ -81,10 +129,50 @@ class NoiseDetectorService {
       final level = (normalized * 100).clamp(0.0, 100.0);
 
       // Ưu tiên AI (TFLite) nếu có model — phân biệt khóc vs hét/ồn; không thì dùng RMS + sustained
-      final aiCrying = cryClassifier.isCrying(Uint8List.fromList(pcmBytes));
+      final pcm = Uint8List.fromList(pcmBytes);
+      final probCry = cryClassifier.predict(pcm);
+      final CrySoundState? aiState;
+      if (probCry == null) {
+        aiState = null;
+      } else if (probCry >= _cryProbThreshold) {
+        aiState = CrySoundState.crying;
+      } else if (probCry < _noiseProbThreshold) {
+        // Theo yêu cầu: chỉ cần noise (probCry < 50%) thì báo ngay.
+        aiState = CrySoundState.noise;
+      } else {
+        // Vùng không chắc chắn 50%..60%: không đổi trạng thái để tránh nhấp nháy.
+        aiState = CrySoundState.unknown;
+      }
       final bool isCrying;
-      if (aiCrying != null) {
-        isCrying = aiCrying;
+      if (aiState != null) {
+        // Rule:
+        // - crying: require sustained >= 2 samples (giảm báo nhầm)
+        // - noise: immediate when probCry < 50% (theo yêu cầu)
+        if (aiState == CrySoundState.crying) {
+          _consecutiveAiCry++;
+          _consecutiveAiNoise = 0;
+          if (_consecutiveAiCry >= _sustainedSamplesForCry) {
+            _lastStableAi = CrySoundState.crying;
+          }
+        } else if (aiState == CrySoundState.noise) {
+          _consecutiveAiNoise++;
+          _consecutiveAiCry = 0;
+          _lastStableAi = CrySoundState.noise;
+        } else {
+          // unknown band: decay streaks but keep last stable state
+          _consecutiveAiCry = 0;
+          _consecutiveAiNoise = 0;
+        }
+
+        isCrying = _lastStableAi == CrySoundState.crying;
+
+        dev.log(
+          'ai=$aiState probCry=${probCry!.toStringAsFixed(4)} '
+          'stable=$_lastStableAi '
+          'streakCry=$_consecutiveAiCry streakNoise=$_consecutiveAiNoise '
+          'level=${level.toStringAsFixed(1)}',
+          name: 'CRY_RTSP',
+        );
       } else {
         if (level > _cryThreshold) {
           _consecutiveHigh++;
@@ -95,7 +183,18 @@ class NoiseDetectorService {
       }
 
       babyStatusProvider.updateSoundLevel(level);
-      babyStatusProvider.setCryingStatus(isCrying);
+      if (probCry != null) {
+        babyStatusProvider.setCryClassification(
+          _lastStableAi,
+          probability: probCry,
+        );
+      } else {
+        // Không có AI → fallback theo RMS (không phân biệt được noise/cry)
+        babyStatusProvider.setCryClassification(
+          isCrying ? CrySoundState.crying : CrySoundState.unknown,
+          probability: null,
+        );
+      }
     } catch (_) {
       // Bỏ qua lỗi, lần sau thử lại.
     } finally {
@@ -107,6 +206,9 @@ class NoiseDetectorService {
     _timer?.cancel();
     _timer = null;
     _consecutiveHigh = 0;
+    _consecutiveAiCry = 0;
+    _consecutiveAiNoise = 0;
+    _lastStableAi = CrySoundState.unknown;
   }
 
   void dispose() {
