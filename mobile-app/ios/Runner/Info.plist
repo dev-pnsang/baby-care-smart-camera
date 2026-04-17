@@ -52,5 +52,7 @@
 	</dict>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Ứng dụng cần dùng microphone để test nhận diện tiếng khóc.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Ứng dụng cần truy cập mạng nội bộ để tự động quét camera ONVIF và kiểm tra kết nối.</string>
 </dict>
 </plist>

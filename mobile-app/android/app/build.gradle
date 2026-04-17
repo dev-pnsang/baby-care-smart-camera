@@ -49,6 +49,10 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.debug
+            // R8 can fail with missing optional TFLite GPU classes in some setups.
+            // Disable minify/shrink for now to ensure a successful release APK build.
+            minifyEnabled false
+            shrinkResources false
         }
     }
 

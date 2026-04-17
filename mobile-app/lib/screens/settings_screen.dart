@@ -3,8 +3,11 @@ import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../theme/design_tokens.dart';
 import '../models/camera_settings.dart';
+import '../models/onvif_discovery.dart';
 import '../providers/camera_settings_provider.dart';
+import '../services/onvif_discovery_service.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
+import '../widgets/onvif_scan_sheet.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -21,6 +24,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late TextEditingController _pathController;
   bool _obscurePassword = true;
   bool _saving = false;
+  bool _onvifScanning = false;
 
   /// % tối thiểu để báo khóc (AI). Mặc định 60.
   double _cryDetectMinPercent = 60;
@@ -108,6 +112,61 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _scanOnvifAndShowSheet() async {
+    final user = _userController.text.trim();
+    final pass = _passwordController.text;
+    if (user.isEmpty || pass.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng nhập user/pass để test ONVIF'),
+          backgroundColor: DesignTokens.warning6,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _onvifScanning = true);
+    final service = OnvifDiscoveryService();
+    List<OnvifDiscoveredDevice> devices = const [];
+    try {
+      devices = await service.discover();
+    } finally {
+      if (mounted) setState(() => _onvifScanning = false);
+    }
+    if (!mounted) return;
+
+    // Show scan results and run connection tests lazily per item.
+    // Also allow tap to autofill IP.
+    // ignore: use_build_context_synchronously
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return OnvifScanSheet(
+          devices: devices,
+          username: user,
+          password: pass,
+          onPickIp: (ip) async {
+            _ipController.text = ip;
+            Navigator.of(ctx).pop();
+            await _save();
+          },
+        );
+      },
+    );
+  }
+
+  void _goBackToHome() {
+    final nav = Navigator.of(context);
+    if (nav.canPop()) {
+      nav.pop();
+    } else {
+      nav.pushReplacementNamed('/');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -122,10 +181,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 slivers: [
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 20, bottom: 10),
-                      child: Text(
-                        'Cài đặt Camera',
-                        style: Theme.of(context).textTheme.headlineMedium,
+                      padding: const EdgeInsets.fromLTRB(4, 12, 20, 10),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: _goBackToHome,
+                            icon: const Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              size: 20,
+                            ),
+                            color: DesignTokens.neutral12,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 40,
+                              minHeight: 40,
+                            ),
+                            tooltip: 'Về trang chủ',
+                          ),
+                          Expanded(
+                            child: Text(
+                              'Cài đặt Camera',
+                              style: Theme.of(context).textTheme.headlineMedium,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -230,6 +310,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             Text(
                               'Nhận diện tiếng khóc (RTSP)',
                               style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'ONVIF (tự động quét trong mạng)',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Ứng dụng sẽ quét camera ONVIF trong cùng mạng Wi‑Fi và dùng user/pass ở trên để test kết nối.',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: DesignTokens.neutral12.withOpacity(0.65),
+                                  ),
+                            ),
+                            const SizedBox(height: 12),
+                            ElevatedButton.icon(
+                              onPressed:
+                                  _onvifScanning ? null : _scanOnvifAndShowSheet,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: DesignTokens.neutral12,
+                                foregroundColor: Colors.white,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              icon: _onvifScanning
+                                  ? const SizedBox(
+                                      height: 18,
+                                      width: 18,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.radar),
+                              label: Text(
+                                _onvifScanning
+                                    ? 'Đang quét...'
+                                    : 'Quét ONVIF trong mạng',
+                              ),
                             ),
                             const SizedBox(height: 8),
                             Text(

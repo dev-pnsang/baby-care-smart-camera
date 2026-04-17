@@ -38,6 +38,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   static const int _fullVolume = 100;
   bool _muteBusy = false;
   bool _isFullscreen = false;
+  String? _lastRtspUrl;
 
   bool _soothingMode = false;
   bool _expressionScreenOn = true;
@@ -57,7 +58,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Provider.of<BabyStatusProvider>(context, listen: false);
     _cameraSettingsProvider =
         Provider.of<CameraSettingsProvider>(context, listen: false);
-    _cameraSettingsProvider.addListener(_onCameraCrySettingsChanged);
     _noiseDetector = NoiseDetectorService(_babyStatusProvider);
 
     _babyStatusListener = _onBabyStatusChanged;
@@ -69,6 +69,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (!mounted) return;
       setState(() {});
       _initializeVideoPlayer();
+      _cameraSettingsProvider.addListener(_onCameraCrySettingsChanged);
     });
   }
 
@@ -90,6 +91,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _applyCryThresholdsFromSettings(s);
     final interval = (s?.soundCheckIntervalSeconds ?? 5).clamp(3, 60);
     _noiseDetector.updateSampleInterval(interval);
+
+    final rtspUrl = _cameraSettingsProvider.rtspUrl;
+    if (rtspUrl != _lastRtspUrl) {
+      _lastRtspUrl = rtspUrl;
+      _initializeVideoPlayer();
+    }
   }
 
   void _onBabyStatusChanged() {
@@ -145,6 +152,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final settingsProvider =
         Provider.of<CameraSettingsProvider>(context, listen: false);
     final String? rtspUrl = settingsProvider.rtspUrl;
+    _lastRtspUrl = rtspUrl;
+
+    // If settings changed, ensure previous controller is released before
+    // creating a new one to avoid stale streams/resource leaks.
+    _videoPlayerController?.stop();
+    _videoPlayerController?.dispose();
+    _videoPlayerController = null;
 
     if (rtspUrl == null || rtspUrl.isEmpty) {
       _noiseDetector.stopMonitoring();
@@ -222,8 +236,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           context.read<BabyStatusProvider>().reset();
           setState(() {
             _isConnecting = false;
-            _errorMessage =
-                'Kết nối timeout. Vui lòng kiểm tra:\n- Camera đã bật RTSP\n- Cùng mạng WiFi\n- Firewall không chặn port 554';
+            _errorMessage = 'Lỗi kết nối';
           });
           cameraProvider.setStreamingStatus(false);
         }
@@ -236,7 +249,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (mounted) {
         setState(() {
           _isConnecting = false;
-          _errorMessage = 'Lỗi khởi tạo player: $e';
+          _errorMessage = 'Lỗi kết nối';
         });
         cameraProvider.setStreamingStatus(false);
       }
@@ -412,8 +425,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                   ),
                                                   SizedBox(height: gap1),
                                                   Text(
-                                                    _errorMessage ??
-                                                        'Không thể kết nối camera',
+                                                    (_errorMessage
+                                                                ?.contains(
+                                                                    'Chưa cấu hình') ==
+                                                            true)
+                                                        ? (_errorMessage ??
+                                                            'Chưa cấu hình camera')
+                                                        : 'Lỗi kết nối',
                                                     style: TextStyle(
                                                       color: Colors.white
                                                           .withOpacity(0.7),
@@ -453,7 +471,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                           icon: const Icon(
                                                               Icons.refresh),
                                                           label: const Text(
-                                                              'Thử lại'),
+                                                              'Reconnect'),
                                                         ),
                                                       ],
                                                     ),
